@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EcoBin — Turn Waste Into Rewards</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --g: #21FF91;
+  --g2: #0DCC72;
+  --g3: #D5FFEA;
+  --dark: #080F0C;
+  --dark2: #0E1A13;
+  --dark3: #152B1F;
+  --card: #111E16;
+  --text: #E8F5EE;
+  --muted: #6B8F78;
+  --white: #FFFFFF;
+  --ff-head: 'Syne', sans-serif;
+  --ff-body: 'DM Sans', sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--dark);color:var(--text);font-family:var(--ff-body);overflow-x:hidden;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1.2rem 5%;display:flex;align-items:center;justify-content:space-between;background:rgba(8,15,12,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(33,255,145,0.08);}
+.logo{font-family:var(--ff-head);font-size:1.6rem;font-weight:800;color:var(--g);letter-spacing:-0.03em;}
+.logo span{color:var(--white);}
+.nav-links{display:flex;gap:2rem;list-style:none;}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:0.9rem;font-weight:500;transition:color .2s;}
+.nav-links a:hover{color:var(--g);}
+.nav-cta{background:var(--g);color:var(--dark);padding:0.6rem 1.4rem;border-radius:50px;font-weight:700;font-size:0.85rem;cursor:pointer;border:none;font-family:var(--ff-body);transition:transform .2s,box-shadow .2s;}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(33,255,145,0.35);}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:8rem 5% 4rem;position:relative;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%, rgba(33,255,145,0.07) 0%, transparent 70%);}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(33,255,145,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(33,255,145,0.04) 1px,transparent 1px);background-size:60px 60px;}
+.hero-inner{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;max-width:1200px;width:100%;position:relative;z-index:2;}
+.hero-badge{display:inline-flex;align-items:center;gap:0.5rem;background:rgba(33,255,145,0.1);border:1px solid rgba(33,255,145,0.25);padding:0.4rem 1rem;border-radius:50px;font-size:0.8rem;color:var(--g);margin-bottom:1.5rem;}
+.hero-badge::before{content:'';width:6px;height:6px;background:var(--g);border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+h1{font-family:var(--ff-head);font-size:clamp(3rem,5vw,4.8rem);font-weight:800;line-height:1.05;letter-spacing:-0.03em;margin-bottom:1.5rem;}
+h1 .accent{color:var(--g);}
+.hero-sub{font-size:1.1rem;color:var(--muted);line-height:1.8;margin-bottom:2.5rem;max-width:460px;}
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap;}
+.btn-primary{background:var(--g);color:var(--dark);padding:0.9rem 2rem;border-radius:50px;font-weight:700;font-size:0.95rem;cursor:pointer;border:none;font-family:var(--ff-body);transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:0.5rem;}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(33,255,145,0.4);}
+.btn-outline{background:transparent;color:var(--text);padding:0.9rem 2rem;border-radius:50px;font-weight:600;font-size:0.95rem;cursor:pointer;border:1px solid rgba(255,255,255,0.15);font-family:var(--ff-body);transition:all .2s;text-decoration:none;}
+.btn-outline:hover{border-color:var(--g);color:var(--g);}
+.hero-visual{position:relative;display:flex;align-items:center;justify-content:center;}
+.bin-container{position:relative;width:320px;height:420px;}
+.smart-bin{width:200px;height:260px;background:linear-gradient(160deg,#1a3028,#0e1a13);border-radius:20px 20px 30px 30px;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border:1px solid rgba(33,255,145,0.2);box-shadow:0 0 60px rgba(33,255,145,0.1),inset 0 0 30px rgba(33,255,145,0.03);}
+.bin-lid{width:220px;height:40px;background:linear-gradient(90deg,#1e3530,#152b1f);border-radius:10px 10px 0 0;position:absolute;left:50%;top:calc(50% - 150px);transform:translateX(-50%);border:1px solid rgba(33,255,145,0.3);}
+.bin-screen{width:120px;height:80px;background:var(--dark);border-radius:10px;position:absolute;left:50%;top:50%;transform:translate(-50%,-60%);border:1px solid rgba(33,255,145,0.3);display:flex;align-items:center;justify-content:center;font-family:var(--ff-head);font-size:0.7rem;color:var(--g);text-align:center;overflow:hidden;}
+.scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--g),transparent);animation:scanDown 2s infinite linear;}
+@keyframes scanDown{0%{top:0;}100%{top:100%;}}
+.bin-qr{font-size:1.5rem;line-height:1.2;letter-spacing:0.05em;}
+.float-card{position:absolute;background:var(--card);border:1px solid rgba(33,255,145,0.15);border-radius:12px;padding:0.8rem 1.2rem;font-size:0.75rem;}
+.fc1{top:30px;right:-20px;animation:floatUp 3s ease-in-out infinite;}
+.fc2{bottom:60px;left:-30px;animation:floatUp 3s ease-in-out infinite 1.5s;}
+@keyframes floatUp{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+.fc-label{color:var(--muted);font-size:0.65rem;margin-bottom:0.2rem;}
+.fc-val{color:var(--g);font-family:var(--ff-head);font-weight:700;font-size:1rem;}
+.hero-stats{display:flex;gap:2rem;margin-top:2rem;}
+.hstat{text-align:center;}
+.hstat-num{font-family:var(--ff-head);font-size:1.8rem;font-weight:800;color:var(--g);}
+.hstat-label{font-size:0.75rem;color:var(--muted);}
+
+/* SECTIONS GENERAL */
+section{padding:6rem 5%;}
+.section-inner{max-width:1200px;margin:0 auto;}
+.tag{display:inline-block;background:rgba(33,255,145,0.1);color:var(--g);padding:0.3rem 1rem;border-radius:50px;font-size:0.75rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:1rem;}
+h2{font-family:var(--ff-head);font-size:clamp(2rem,3.5vw,3rem);font-weight:800;line-height:1.15;letter-spacing:-0.02em;margin-bottom:1rem;}
+h2 .accent{color:var(--g);}
+.section-sub{color:var(--muted);font-size:1.05rem;line-height:1.8;max-width:520px;}
+
+/* PROBLEM */
+.problem{background:var(--dark2);}
+.problem-grid{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;margin-top:4rem;}
+.problem-stats{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+.pstat{background:var(--dark3);border:1px solid rgba(255,255,255,0.05);border-radius:16px;padding:1.8rem;position:relative;overflow:hidden;}
+.pstat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--g),transparent);}
+.pstat-num{font-family:var(--ff-head);font-size:2.4rem;font-weight:800;color:var(--g);}
+.pstat-label{color:var(--muted);font-size:0.85rem;margin-top:0.3rem;}
+.problem-points{list-style:none;display:flex;flex-direction:column;gap:1.2rem;}
+.problem-points li{display:flex;align-items:flex-start;gap:1rem;font-size:0.95rem;line-height:1.6;}
+.pp-icon{width:36px;height:36px;background:rgba(255,80,80,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+
+/* HOW IT WORKS */
+.hiw{background:var(--dark);}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-top:4rem;position:relative;}
+.steps::before{content:'';position:absolute;top:2.2rem;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--g),transparent);z-index:0;}
+.step{background:var(--card);border:1px solid rgba(33,255,145,0.1);border-radius:20px;padding:2rem 1.5rem;text-align:center;position:relative;z-index:1;transition:border-color .3s,transform .3s;}
+.step:hover{border-color:rgba(33,255,145,0.4);transform:translateY(-6px);}
+.step-num{width:48px;height:48px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--ff-head);font-weight:800;font-size:1rem;color:var(--dark);margin:0 auto 1.2rem;}
+.step h3{font-family:var(--ff-head);font-size:1rem;font-weight:700;margin-bottom:0.6rem;color:var(--white);}
+.step p{font-size:0.85rem;color:var(--muted);line-height:1.7;}
+
+/* FEATURES */
+.features{background:var(--dark2);}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:4rem;}
+.feat-card{background:var(--card);border:1px solid rgba(33,255,145,0.08);border-radius:20px;padding:2rem;transition:all .3s;}
+.feat-card:hover{border-color:rgba(33,255,145,0.3);transform:translateY(-4px);box-shadow:0 20px 50px rgba(33,255,145,0.06);}
+.feat-icon{width:52px;height:52px;background:rgba(33,255,145,0.1);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:1.2rem;}
+.feat-card h3{font-family:var(--ff-head);font-size:1.05rem;font-weight:700;color:var(--white);margin-bottom:0.6rem;}
+.feat-card p{font-size:0.85rem;color:var(--muted);line-height:1.7;}
+
+/* SMART BIN SHOWCASE */
+.showcase{background:var(--dark3);}
+.showcase-inner{display:grid;grid-template-columns:1fr 1.2fr;gap:5rem;align-items:center;}
+.showcase-features{list-style:none;display:flex;flex-direction:column;gap:1rem;margin-top:2rem;}
+.sf-item{display:flex;align-items:center;gap:1rem;background:var(--card);border:1px solid rgba(33,255,145,0.08);border-radius:12px;padding:1rem 1.2rem;}
+.sf-dot{width:10px;height:10px;background:var(--g);border-radius:50%;}
+.sf-text{font-size:0.9rem;color:var(--text);}
+.bin-showcase-visual{position:relative;display:flex;align-items:center;justify-content:center;padding:3rem;}
+.bin3d{width:220px;height:300px;background:linear-gradient(135deg,#1e3530 0%,#0e1a13 100%);border-radius:24px 24px 34px 34px;border:1px solid rgba(33,255,145,0.25);box-shadow:0 0 80px rgba(33,255,145,0.12),0 40px 80px rgba(0,0,0,0.5);position:relative;overflow:hidden;}
+.bin3d-screen{background:var(--dark);margin:20px 20px 0;border-radius:12px;height:100px;border:1px solid rgba(33,255,145,0.2);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.bin3d-scan{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--g),transparent);animation:scanDown 2s infinite;}
+.bin3d-text{color:var(--g);font-size:0.65rem;text-align:center;font-family:var(--ff-head);}
+.bin3d-slots{display:flex;gap:8px;padding:0 20px;margin-top:15px;}
+.slot{flex:1;height:50px;background:var(--dark2);border-radius:8px;border:1px solid rgba(33,255,145,0.1);display:flex;align-items:center;justify-content:center;font-size:1rem;}
+.bin3d-footer{position:absolute;bottom:15px;left:20px;right:20px;text-align:center;font-size:0.6rem;color:var(--muted);}
+.glow-ring{position:absolute;width:300px;height:300px;border-radius:50%;border:1px solid rgba(33,255,145,0.1);animation:ringPulse 3s ease-in-out infinite;}
+.glow-ring:nth-child(2){width:380px;height:380px;animation-delay:1s;}
+@keyframes ringPulse{0%,100%{opacity:0.5;transform:scale(1);}50%{opacity:1;transform:scale(1.02);}}
+
+/* REWARDS */
+.rewards{background:var(--dark);}
+.rewards-layout{display:grid;grid-template-columns:1.2fr 1fr;gap:5rem;align-items:center;margin-top:4rem;}
+.reward-cards{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.reward-card{border-radius:16px;padding:1.5rem;transition:transform .3s;}
+.reward-card:hover{transform:translateY(-4px);}
+.rc-green{background:linear-gradient(135deg,rgba(33,255,145,0.15),rgba(33,255,145,0.05));border:1px solid rgba(33,255,145,0.2);}
+.rc-blue{background:linear-gradient(135deg,rgba(0,150,255,0.15),rgba(0,150,255,0.05));border:1px solid rgba(0,150,255,0.2);}
+.rc-gold{background:linear-gradient(135deg,rgba(255,200,0,0.15),rgba(255,200,0,0.05));border:1px solid rgba(255,200,0,0.2);}
+.rc-purple{background:linear-gradient(135deg,rgba(180,0,255,0.15),rgba(180,0,255,0.05));border:1px solid rgba(180,0,255,0.2);}
+.rc-icon{font-size:2rem;margin-bottom:0.8rem;}
+.rc-name{font-family:var(--ff-head);font-weight:700;font-size:0.95rem;margin-bottom:0.3rem;color:var(--white);}
+.rc-desc{font-size:0.8rem;color:var(--muted);}
+.wallet-ui{background:var(--card);border:1px solid rgba(33,255,145,0.15);border-radius:24px;padding:2rem;position:relative;overflow:hidden;}
+.wallet-ui::before{content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;background:radial-gradient(circle,rgba(33,255,145,0.1),transparent);border-radius:50%;}
+.wallet-bal-label{font-size:0.8rem;color:var(--muted);margin-bottom:0.3rem;}
+.wallet-bal{font-family:var(--ff-head);font-size:3rem;font-weight:800;color:var(--g);}
+.wallet-pts{font-size:0.85rem;color:var(--muted);margin-bottom:1.5rem;}
+.wallet-progress{background:var(--dark3);border-radius:50px;height:8px;margin-bottom:0.5rem;overflow:hidden;}
+.wallet-bar{height:100%;width:68%;background:linear-gradient(90deg,var(--g2),var(--g));border-radius:50px;}
+.wallet-prog-label{display:flex;justify-content:space-between;font-size:0.75rem;color:var(--muted);margin-bottom:1.5rem;}
+.wallet-tx{display:flex;flex-direction:column;gap:0.7rem;}
+.tx{display:flex;align-items:center;justify-content:space-between;padding:0.7rem 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.tx-left{display:flex;align-items:center;gap:0.8rem;}
+.tx-dot{width:32px;height:32px;border-radius:50%;background:rgba(33,255,145,0.1);display:flex;align-items:center;justify-content:center;font-size:0.9rem;}
+.tx-info{display:flex;flex-direction:column;}
+.tx-name{font-size:0.85rem;color:var(--text);}
+.tx-date{font-size:0.7rem;color:var(--muted);}
+.tx-pts{font-family:var(--ff-head);font-weight:700;font-size:0.9rem;color:var(--g);}
+
+/* IMPACT DASHBOARD */
+.impact{background:var(--dark2);}
+.impact-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-top:4rem;}
+.impact-card{background:var(--card);border:1px solid rgba(33,255,145,0.08);border-radius:20px;padding:2rem;text-align:center;}
+.impact-icon{font-size:2.5rem;margin-bottom:1rem;}
+.impact-num{font-family:var(--ff-head);font-size:2.8rem;font-weight:800;color:var(--g);line-height:1;}
+.impact-unit{font-family:var(--ff-head);font-size:1rem;color:var(--g2);}
+.impact-label{font-size:0.8rem;color:var(--muted);margin-top:0.4rem;}
+.impact-bar-section{margin-top:3rem;background:var(--card);border:1px solid rgba(33,255,145,0.08);border-radius:20px;padding:2rem;}
+.impact-bar-title{font-family:var(--ff-head);font-weight:700;font-size:1rem;color:var(--white);margin-bottom:1.5rem;}
+.waste-bar{margin-bottom:1.2rem;}
+.wb-label{display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:0.4rem;color:var(--text);}
+.wb-track{background:var(--dark3);border-radius:50px;height:10px;overflow:hidden;}
+.wb-fill{height:100%;border-radius:50px;background:linear-gradient(90deg,var(--g2),var(--g));}
+
+/* TESTIMONIALS */
+.testimonials{background:var(--dark);}
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:4rem;}
+.testi-card{background:var(--card);border:1px solid rgba(33,255,145,0.08);border-radius:20px;padding:2rem;position:relative;}
+.testi-card::before{content:'"';position:absolute;top:1rem;right:1.5rem;font-family:Georgia;font-size:5rem;color:rgba(33,255,145,0.08);line-height:1;}
+.testi-stars{color:var(--g);font-size:0.8rem;letter-spacing:0.1em;margin-bottom:1rem;}
+.testi-text{font-size:0.9rem;color:var(--muted);line-height:1.8;margin-bottom:1.5rem;font-style:italic;}
+.testi-author{display:flex;align-items:center;gap:0.8rem;}
+.testi-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--g),var(--g2));display:flex;align-items:center;justify-content:center;font-family:var(--ff-head);font-weight:700;font-size:0.85rem;color:var(--dark);}
+.testi-name{font-weight:600;font-size:0.9rem;color:var(--white);}
+.testi-role{font-size:0.75rem;color:var(--muted);}
+
+/* PARTNERS */
+.partners{background:var(--dark2);}
+.partner-logos{display:flex;gap:2rem;flex-wrap:wrap;justify-content:center;align-items:center;margin-top:3rem;opacity:0.5;}
+.partner-logo{background:var(--card);border:1px solid rgba(33,255,145,0.1);border-radius:12px;padding:1rem 2rem;font-family:var(--ff-head);font-size:1rem;font-weight:700;color:var(--muted);}
+
+/* CTA FOOTER */
+.cta-footer{background:var(--dark3);}
+.cta-box{background:linear-gradient(135deg,rgba(33,255,145,0.08),rgba(33,255,145,0.02));border:1px solid rgba(33,255,145,0.2);border-radius:28px;padding:4rem;text-align:center;margin-bottom:4rem;}
+.cta-box h2{margin-bottom:1rem;max-width:600px;margin-left:auto;margin-right:auto;}
+.cta-box p{color:var(--muted);font-size:1.05rem;margin-bottom:2rem;}
+.cta-inputs{display:flex;gap:1rem;max-width:440px;margin:0 auto;}
+.cta-input{flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(33,255,145,0.2);border-radius:50px;padding:0.8rem 1.5rem;color:var(--text);font-family:var(--ff-body);font-size:0.9rem;outline:none;}
+.cta-input:focus{border-color:var(--g);}
+footer{display:flex;justify-content:space-between;align-items:center;padding:2rem 0;border-top:1px solid rgba(255,255,255,0.06);}
+.footer-logo{font-family:var(--ff-head);font-size:1.3rem;font-weight:800;color:var(--g);}
+.footer-links{display:flex;gap:2rem;}
+.footer-links a{color:var(--muted);text-decoration:none;font-size:0.85rem;transition:color .2s;}
+.footer-links a:hover{color:var(--g);}
+.footer-copy{font-size:0.8rem;color:var(--muted);}
+
+/* ANIMATIONS */
+.fade-in{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease;}
+.fade-in.visible{opacity:1;transform:none;}
+
+@media(max-width:768px){
+  .hero-inner,.problem-grid,.hiw .steps,.feat-grid,.showcase-inner,.rewards-layout,.impact-grid,.testi-grid{grid-template-columns:1fr;}
+  .steps::before{display:none;}
+  .reward-cards{grid-template-columns:1fr 1fr;}
+  .cta-inputs{flex-direction:column;}
+  nav .nav-links{display:none;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Eco<span>Bin</span></div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#rewards">Rewards</a></li>
+    <li><a href="#impact">Impact</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <button class="nav-cta">Get Started →</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-inner">
+    <div>
+      <div class="hero-badge">🌱 AI-Powered Waste Management</div>
+      <h1>Turn <span class="accent">Waste</span> Into Rewards</h1>
+      <p class="hero-sub">EcoBin is India's first AI-powered smart waste ecosystem. Scan, segregate, earn rewards — and track your environmental impact in real time.</p>
+      <div class="hero-btns">
+        <a href="#contact" class="btn-primary">Start Recycling ♻</a>
+        <a href="#about" class="btn-outline">Watch Demo ▶</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat"><div class="hstat-num">50K+</div><div class="hstat-label">Active Users</div></div>
+        <div class="hstat"><div class="hstat-num">2.4T</div><div class="hstat-label">Waste Processed</div></div>
+        <div class="hstat"><div class="hstat-num">98%</div><div class="hstat-label">Sort Accuracy</div></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="bin-container">
+        <div class="bin-lid"></div>
+        <div class="smart-bin">
+          <div class="bin-screen">
+            <div class="scan-line"></div>
+            <div class="bin-qr">▣▣▣<br>▣ ▣<br>▣▣▣</div>
+          </div>
+        </div>
+        <div class="float-card fc1">
+          <div class="fc-label">Points Earned</div>
+          <div class="fc-val">+240 pts</div>
+        </div>
+        <div class="float-card fc2">
+          <div class="fc-label">CO₂ Saved</div>
+          <div class="fc-val">1.8 kg</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="problem" id="about">
+<div class="section-inner">
+  <div class="tag">The Problem</div>
+  <div class="problem-grid fade-in">
+    <div>
+      <h2>India's Waste Crisis<br>is <span class="accent">Escalating</span></h2>
+      <p class="section-sub">160,000 metric tonnes of municipal solid waste is generated daily in India — yet less than 30% is properly processed. The result: overflowing landfills, soil contamination, and lost recycling potential.</p>
+      <ul class="problem-points" style="margin-top:2rem;">
+        <li><div class="pp-icon">🗑</div><div><strong>No Awareness:</strong> Most citizens don't know how to segregate wet, dry, and hazardous waste correctly.</div></li>
+        <li><div class="pp-icon">📍</div><div><strong>No Convenience:</strong> Finding recycling centres is difficult with no tracking or scheduling tools.</div></li>
+        <li><div class="pp-icon">💡</div><div><strong>No Incentive:</strong> Zero reward or recognition for eco-friendly behaviour creates no motivation.</div></li>
+        <li><div class="pp-icon">📊</div><div><strong>No Visibility:</strong> Municipalities have zero real-time data on waste collection efficiency.</div></li>
+      </ul>
+    </div>
+    <div class="problem-stats fade-in">
+      <div class="pstat"><div class="pstat-num">62M</div><div class="pstat-label">Tonnes of waste generated annually in India</div></div>
+      <div class="pstat"><div class="pstat-num">&lt;30%</div><div class="pstat-label">Of waste is properly recycled or composted</div></div>
+      <div class="pstat"><div class="pstat-num">3000+</div><div class="pstat-label">Illegal dumping sites across Indian cities</div></div>
+      <div class="pstat"><div class="pstat-num">₹5L Cr</div><div class="pstat-label">Annual economic loss from poor waste management</div></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="hiw" id="features">
+<div class="section-inner">
+  <div style="text-align:center;">
+    <div class="tag">How It Works</div>
+    <h2>Four Steps to a <span class="accent">Greener Future</span></h2>
+    <p class="section-sub" style="margin:0 auto 0;">Our seamless process makes sustainable waste disposal effortless and rewarding.</p>
+  </div>
+  <div class="steps fade-in">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h3>Scan the QR Bin</h3>
+      <p>Open the EcoBin app, scan the QR code on any smart bin in your area to begin your recycling session.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h3>AI Waste Detection</h3>
+      <p>Our AI camera module identifies waste type — organic, plastic, metal, e-waste — and guides proper disposal in real time.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h3>Earn Reward Points</h3>
+      <p>Every correct disposal earns EcoPoints. Redeem for discounts, coupons, or donate to environmental NGOs.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <h3>Track Your Impact</h3>
+      <p>See your personal sustainability score, CO₂ savings, and leaderboard rank. Share achievements with friends.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+<div class="section-inner">
+  <div class="tag">Features</div>
+  <h2>Everything You Need for <span class="accent">Smart Recycling</span></h2>
+  <div class="feat-grid fade-in">
+    <div class="feat-card"><div class="feat-icon">🤖</div><h3>AI Waste Classification</h3><p>Machine learning model trained on 100K+ waste images classifies waste in under 1 second with 98% accuracy.</p></div>
+    <div class="feat-card"><div class="feat-icon">📱</div><h3>QR Smart Bins</h3><p>Connected bins with fill-level sensors, QR authentication, and automatic pickup alerts to municipality teams.</p></div>
+    <div class="feat-card"><div class="feat-icon">🎁</div><h3>Rewards Ecosystem</h3><p>Earn EcoPoints on every disposal. Redeem via Paytm, Amazon, Swiggy, or donate to tree-planting drives.</p></div>
+    <div class="feat-card"><div class="feat-icon">📅</div><h3>Pickup Scheduling</h3><p>Book doorstep pickup for bulk recyclables. Our partners collect, sort, and process with verified recyclers.</p></div>
+    <div class="feat-card"><div class="feat-icon">📊</div><h3>Analytics Dashboard</h3><p>Real-time recycling analytics for households, offices, and municipalities — waste trends, savings, and forecasts.</p></div>
+    <div class="feat-card"><div class="feat-icon">🏆</div><h3>Gamification Engine</h3><p>Leaderboards, eco-badges, seasonal challenges, and team competitions to drive continued engagement.</p></div>
+    <div class="feat-card"><div class="feat-icon">🌿</div><h3>Carbon Footprint Score</h3><p>Personal Sustainability Score updated daily. Compare with city averages and earn Green Champion badges.</p></div>
+    <div class="feat-card"><div class="feat-icon">🔔</div><h3>Smart Notifications</h3><p>Bin-full alerts, pickup reminders, reward expiry notices, and eco-tips personalised by AI.</p></div>
+    <div class="feat-card"><div class="feat-icon">🏛</div><h3>Municipal Integration</h3><p>API-ready platform connects with municipality SCADA systems for city-wide waste intelligence.</p></div>
+  </div>
+</div>
+</section>
+
+<!-- SMART BIN SHOWCASE -->
+<section class="showcase">
+<div class="section-inner">
+  <div class="showcase-inner fade-in">
+    <div>
+      <div class="tag">Smart Bin Technology</div>
+      <h2>The Bin That <span class="accent">Thinks</span> With You</h2>
+      <p class="section-sub">EcoBin's IoT-enabled smart bins are the hardware backbone of our ecosystem — durable, connected, and designed for Indian conditions.</p>
+      <ul class="showcase-features">
+        <li class="sf-item"><div class="sf-dot"></div><div class="sf-text">AI camera for real-time waste type detection</div></li>
+        <li class="sf-item"><div class="sf-dot"></div><div class="sf-text">Fill-level ultrasonic sensors (95% capacity alert)</div></li>
+        <li class="sf-item"><div class="sf-dot"></div><div class="sf-text">QR code authentication panel</div></li>
+        <li class="sf-item"><div class="sf-dot"></div><div class="sf-text">4G/LoRa connectivity for rural & urban areas</div></li>
+        <li class="sf-item"><div class="sf-dot"></div><div class="sf-text">Solar-powered with 48-hr battery backup</div></li>
+        <li class="sf-item"><div class="sf-dot"></div><div class="sf-text">Weather-resistant IP67 certification</div></li>
+        <li class="sf-item"><div class="sf-dot"></div><div class="sf-text">4-compartment sorting: Wet / Dry / Metal / E-waste</div></li>
+      </ul>
+    </div>
+    <div class="bin-showcase-visual">
+      <div class="glow-ring"></div>
+      <div class="glow-ring"></div>
+      <div class="bin3d">
+        <div class="bin3d-screen">
+          <div class="bin3d-scan"></div>
+          <div class="bin3d-text">AI SCAN ACTIVE<br>♻ READY</div>
+        </div>
+        <div class="bin3d-slots">
+          <div class="slot">🥬</div>
+          <div class="slot">🧴</div>
+          <div class="slot">⚡</div>
+        </div>
+        <div class="bin3d-footer">ECOBIN SMART v2.0 • Scan to Earn</div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- REWARDS -->
+<section class="rewards" id="rewards">
+<div class="section-inner">
+  <div class="tag">Rewards System</div>
+  <h2>Recycle More. <span class="accent">Earn More.</span></h2>
+  <div class="rewards-layout fade-in">
+    <div>
+      <p class="section-sub" style="margin-bottom:2rem;">Our EcoPoints reward engine converts every responsible disposal into real value. Partner with 50+ brands for a redemption ecosystem users love.</p>
+      <div class="reward-cards">
+        <div class="reward-card rc-green"><div class="rc-icon">🛒</div><div class="rc-name">Grocery Discounts</div><div class="rc-desc">Up to 20% off on BigBasket, Zepto & Blinkit</div></div>
+        <div class="reward-card rc-blue"><div class="rc-icon">🚌</div><div class="rc-name">Transit Credits</div><div class="rc-desc">Free bus/metro rides via BMTC & Delhi Metro</div></div>
+        <div class="reward-card rc-gold"><div class="rc-icon">🍔</div><div class="rc-name">Food Offers</div><div class="rc-desc">Swiggy & Zomato discount vouchers</div></div>
+        <div class="reward-card rc-purple"><div class="rc-icon">🌳</div><div class="rc-name">Plant a Tree</div><div class="rc-desc">Donate points to Green India Foundation</div></div>
+      </div>
+    </div>
+    <div class="wallet-ui">
+      <div class="wallet-bal-label">Your EcoWallet</div>
+      <div class="wallet-bal">2,840</div>
+      <div class="wallet-pts">EcoPoints · Rank #23 in Mumbai</div>
+      <div class="wallet-progress"><div class="wallet-bar"></div></div>
+      <div class="wallet-prog-label"><span>Silver Tier</span><span>3,000 pts → Gold</span></div>
+      <div class="wallet-tx">
+        <div class="tx"><div class="tx-left"><div class="tx-dot">♻</div><div class="tx-info"><span class="tx-name">Plastic Bottle × 3</span><span class="tx-date">Today, 9:42 AM</span></div></div><span class="tx-pts">+30</span></div>
+        <div class="tx"><div class="tx-left"><div class="tx-dot">📦</div><div class="tx-info"><span class="tx-name">Cardboard Box × 2</span><span class="tx-date">Yesterday</span></div></div><span class="tx-pts">+40</span></div>
+        <div class="tx"><div class="tx-left"><div class="tx-dot">🔋</div><div class="tx-info"><span class="tx-name">Battery Disposal</span><span class="tx-date">May 17</span></div></div><span class="tx-pts">+80</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- IMPACT DASHBOARD -->
+<section class="impact" id="impact">
+<div class="section-inner">
+  <div style="text-align:center;">
+    <div class="tag">Sustainability Impact</div>
+    <h2>Real Numbers. <span class="accent">Real Change.</span></h2>
+  </div>
+  <div class="impact-grid fade-in">
+    <div class="impact-card"><div class="impact-icon">♻</div><div class="impact-num">4.2<span class="impact-unit">M</span></div><div class="impact-label">Kilograms Recycled</div></div>
+    <div class="impact-card"><div class="impact-icon">🌳</div><div class="impact-num">12<span class="impact-unit">K</span></div><div class="impact-label">Trees Equivalent Saved</div></div>
+    <div class="impact-card"><div class="impact-icon">💧</div><div class="impact-num">8.6<span class="impact-unit">M</span></div><div class="impact-label">Litres Water Saved</div></div>
+    <div class="impact-card"><div class="impact-icon">🌍</div><div class="impact-num">310<span class="impact-unit">T</span></div><div class="impact-label">CO₂ Emissions Avoided</div></div>
+  </div>
+  <div class="impact-bar-section fade-in" style="margin-top:2rem;">
+    <div class="impact-bar-title">♻ Waste Category Breakdown (Monthly)</div>
+    <div class="waste-bar"><div class="wb-label"><span>♻ Dry Waste (Plastic, Paper)</span><span>42%</span></div><div class="wb-track"><div class="wb-fill" style="width:42%"></div></div></div>
+    <div class="waste-bar"><div class="wb-label"><span>🥬 Wet / Organic Waste</span><span>28%</span></div><div class="wb-track"><div class="wb-fill" style="width:28%"></div></div></div>
+    <div class="waste-bar"><div class="wb-label"><span>⚡ E-Waste</span><span>18%</span></div><div class="wb-track"><div class="wb-fill" style="width:18%"></div></div></div>
+    <div class="waste-bar"><div class="wb-label"><span>🔩 Metal Scrap</span><span>12%</span></div><div class="wb-track"><div class="wb-fill" style="width:12%"></div></div></div>
+  </div>
+</div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+<div class="section-inner">
+  <div style="text-align:center;">
+    <div class="tag">Testimonials</div>
+    <h2>Loved by <span class="accent">Real People</span></h2>
+  </div>
+  <div class="testi-grid fade-in">
+    <div class="testi-card"><div class="testi-stars">★★★★★</div><p class="testi-text">EcoBin completely changed how our society handles waste. We've cut landfill contribution by 60% in just 3 months and residents are actually excited to recycle!</p><div class="testi-author"><div class="testi-avatar">RS</div><div><div class="testi-name">Rahul Sharma</div><div class="testi-role">Society Chairman, Pune</div></div></div></div>
+    <div class="testi-card"><div class="testi-stars">★★★★★</div><p class="testi-text">As a college student, the gamification element is genius. Our campus leaderboard creates friendly competition. We've won ₹5,000 worth of food vouchers as a hostel team!</p><div class="testi-author"><div class="testi-avatar">AP</div><div><div class="testi-name">Anjali Patel</div><div class="testi-role">MBA Student, Symbiosis Pune</div></div></div></div>
+    <div class="testi-card"><div class="testi-stars">★★★★★</div><p class="testi-text">The municipality dashboard gave us granular data we never had before. We optimised 40% of our pickup routes, saving ₹2.3 lakh monthly. Outstanding product.</p><div class="testi-author"><div class="testi-avatar">MK</div><div><div class="testi-name">Meera Kulkarni</div><div class="testi-role">Deputy Commissioner, BMC</div></div></div></div>
+  </div>
+</div>
+</section>
+
+<!-- PARTNERS -->
+<section class="partners">
+<div class="section-inner" style="text-align:center;">
+  <div class="tag">Partners & Integrations</div>
+  <h2>Built with a <span class="accent">Strong Ecosystem</span></h2>
+  <div class="partner-logos">
+    <div class="partner-logo">Paytm</div>
+    <div class="partner-logo">Swiggy</div>
+    <div class="partner-logo">BigBasket</div>
+    <div class="partner-logo">NMMC</div>
+    <div class="partner-logo">E-Parisaraa</div>
+    <div class="partner-logo">Green Recyclers</div>
+    <div class="partner-logo">TERI</div>
+    <div class="partner-logo">IIT Bombay</div>
+  </div>
+</div>
+</section>
+
+<!-- CTA FOOTER -->
+<section class="cta-footer" id="contact">
+<div class="section-inner">
+  <div class="cta-box">
+    <div class="tag">Get Started Today</div>
+    <h2>Join 50,000+ Citizens Making India <span class="accent">Greener</span></h2>
+    <p>Download the app, find your nearest smart bin, and start earning rewards while saving the planet.</p>
+    <div class="cta-inputs">
+      <input class="cta-input" type="email" placeholder="Enter your email"/>
+      <button class="btn-primary">Join EcoBin →</button>
+    </div>
+  </div>
+  <footer>
+    <div class="footer-logo">EcoBin</div>
+    <div class="footer-links">
+      <a href="#">Privacy</a><a href="#">Terms</a><a href="#">Blog</a><a href="#">Careers</a>
+    </div>
+    <div class="footer-copy">© 2025 EcoBin. Prepared by Pradnya Suresh Patil, Roll No. 97, MBA Part II Sem IV</div>
+  </footer>
+</div>
+</section>
+
+<script>
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.15 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

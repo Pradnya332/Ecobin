@@ -1,0 +1,1944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>EcoBin App</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+/* ══════════════════════════════════════════════
+   RESET & ROOT
+══════════════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --g:#21FF91;--g2:#0DCC72;--g3:#D5FFEA;
+  --dark:#080F0C;--dark2:#0E1A13;--dark3:#152B1F;
+  --card:#111E16;--card2:#192A1E;
+  --text:#E8F5EE;--muted:#6B8F78;--muted2:#4A6B56;
+  --red:#FF5B5B;--gold:#FFC84A;--blue:#38C9F0;--purple:#B47FFF;
+  --fh:'Syne',sans-serif;--fb:'DM Sans',sans-serif;
+  --r:18px;--r2:12px;--r3:50px;
+  --shadow:0 8px 32px rgba(0,0,0,.45);
+  --glow:0 0 30px rgba(33,255,145,.18);
+}
+html,body{height:100%;background:#050808;font-family:var(--fb);color:var(--text);overflow:hidden;}
+
+/* ══════════════════════════════════════════════
+   PHONE SHELL
+══════════════════════════════════════════════ */
+#shell{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse 80% 80% at 50% 50%,#0a1a10 0%,#050808 100%);
+}
+#phone{
+  width:390px;height:844px;background:var(--dark);border-radius:44px;
+  position:relative;overflow:hidden;
+  box-shadow:0 0 0 1px rgba(33,255,145,.12),0 0 0 8px rgba(0,0,0,.5),0 40px 80px rgba(0,0,0,.8),var(--glow);
+}
+/* Dynamic island */
+#phone::before{
+  content:'';position:absolute;top:14px;left:50%;transform:translateX(-50%);
+  width:126px;height:37px;background:#000;border-radius:20px;z-index:200;
+}
+/* status bar */
+.sbar{
+  position:absolute;top:0;left:0;right:0;height:54px;z-index:150;
+  display:flex;align-items:flex-end;justify-content:space-between;
+  padding:0 28px 8px;font-size:12px;font-weight:600;color:var(--text);
+  pointer-events:none;
+}
+.sbar-right{display:flex;align-items:center;gap:5px;}
+.sbar-right svg{width:15px;height:15px;fill:var(--text);}
+
+/* ══════════════════════════════════════════════
+   SCREENS
+══════════════════════════════════════════════ */
+.screen{
+  position:absolute;inset:0;overflow:hidden;overflow-y:auto;
+  background:var(--dark);display:none;flex-direction:column;
+  scrollbar-width:none;
+}
+.screen::-webkit-scrollbar{display:none;}
+.screen.active{display:flex;}
+.screen.slide-in{animation:slideIn .32s cubic-bezier(.4,0,.2,1) forwards;}
+.screen.slide-out{animation:slideOut .32s cubic-bezier(.4,0,.2,1) forwards;}
+.screen.slide-back-in{animation:slideBackIn .32s cubic-bezier(.4,0,.2,1) forwards;}
+.screen.slide-back-out{animation:slideBackOut .32s cubic-bezier(.4,0,.2,1) forwards;}
+@keyframes slideIn{from{transform:translateX(100%);opacity:.5}to{transform:none;opacity:1}}
+@keyframes slideOut{from{transform:none;opacity:1}to{transform:translateX(-30%);opacity:.5}}
+@keyframes slideBackIn{from{transform:translateX(-30%);opacity:.5}to{transform:none;opacity:1}}
+@keyframes slideBackOut{from{transform:none;opacity:1}to{transform:translateX(100%);opacity:.5}}
+
+/* ══════════════════════════════════════════════
+   BOTTOM NAV
+══════════════════════════════════════════════ */
+.bnav{
+  position:absolute;bottom:0;left:0;right:0;height:82px;z-index:100;
+  background:rgba(8,15,12,.96);backdrop-filter:blur(20px);
+  border-top:1px solid rgba(33,255,145,.08);
+  display:flex;align-items:center;justify-content:space-around;
+  padding-bottom:16px;
+}
+.bnav-item{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  cursor:pointer;transition:all .2s;min-width:54px;
+}
+.bnav-item .ni{
+  width:38px;height:38px;border-radius:var(--r2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;transition:all .25s;
+}
+.bnav-item .nl{font-size:10px;color:var(--muted);font-weight:500;transition:color .2s;}
+.bnav-item.active .ni{background:rgba(33,255,145,.15);}
+.bnav-item.active .nl{color:var(--g);}
+.bnav-scan .ni{
+  background:linear-gradient(135deg,var(--g),var(--g2)) !important;
+  width:48px;height:48px;border-radius:14px;
+  box-shadow:0 4px 20px rgba(33,255,145,.4);
+  margin-bottom:2px;
+}
+
+/* ══════════════════════════════════════════════
+   SHARED COMPONENTS
+══════════════════════════════════════════════ */
+.page-head{padding:60px 22px 16px;position:relative;z-index:2;}
+.ph-tag{
+  display:inline-block;background:rgba(33,255,145,.1);color:var(--g);
+  padding:4px 12px;border-radius:var(--r3);font-size:11px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;
+}
+.ph-title{font-family:var(--fh);font-size:26px;font-weight:800;line-height:1.1;color:var(--white,#fff);}
+.ph-title .accent{color:var(--g);}
+.ph-sub{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.5;}
+.card{
+  background:var(--card);border:1px solid rgba(33,255,145,.07);
+  border-radius:var(--r);padding:18px;
+  box-shadow:var(--shadow);
+}
+.card-sm{border-radius:var(--r2);padding:14px;}
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  border:none;cursor:pointer;font-family:var(--fb);font-weight:600;
+  transition:all .2s;border-radius:var(--r3);
+}
+.btn-primary{background:var(--g);color:var(--dark);padding:14px 24px;font-size:15px;width:100%;}
+.btn-primary:hover{filter:brightness(1.05);transform:translateY(-1px);box-shadow:0 8px 24px rgba(33,255,145,.35);}
+.btn-primary:active{transform:scale(.97);}
+.btn-ghost{background:rgba(255,255,255,.06);color:var(--text);padding:12px 20px;font-size:14px;border:1px solid rgba(255,255,255,.08);}
+.btn-ghost:active{background:rgba(255,255,255,.1);}
+.chip{
+  background:rgba(33,255,145,.1);border:1px solid rgba(33,255,145,.2);
+  color:var(--g);padding:6px 14px;border-radius:var(--r3);
+  font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;
+  font-family:var(--fb);
+}
+.chip.active{background:var(--g);color:var(--dark);}
+.chip:active{transform:scale(.95);}
+.tag-pill{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(33,255,145,.08);border:1px solid rgba(33,255,145,.15);
+  color:var(--g);padding:3px 10px;border-radius:50px;font-size:11px;font-weight:600;
+}
+.divider{height:1px;background:rgba(255,255,255,.05);margin:16px 0;}
+.progress-bar{background:rgba(255,255,255,.06);border-radius:50px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:50px;background:linear-gradient(90deg,var(--g2),var(--g));transition:width .6s ease;}
+.section-title{font-family:var(--fh);font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;}
+.back-btn{
+  width:38px;height:38px;background:rgba(255,255,255,.06);border-radius:var(--r2);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  border:1px solid rgba(255,255,255,.08);font-size:16px;transition:all .2s;
+}
+.back-btn:active{background:rgba(255,255,255,.12);}
+.input-field{
+  background:rgba(255,255,255,.05);border:1px solid rgba(33,255,145,.12);
+  border-radius:var(--r2);padding:14px 16px;font-size:14px;color:var(--text);
+  font-family:var(--fb);width:100%;outline:none;transition:border-color .2s;
+}
+.input-field:focus{border-color:rgba(33,255,145,.4);}
+.input-field::placeholder{color:var(--muted2);}
+.input-label{font-size:12px;color:var(--muted);font-weight:500;margin-bottom:6px;}
+
+/* ══════════════════════════════════════════════
+   SPLASH SCREEN
+══════════════════════════════════════════════ */
+#splash{background:var(--dark);align-items:center;justify-content:center;}
+.splash-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(33,255,145,.1) 0%,transparent 70%);
+}
+.splash-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(33,255,145,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(33,255,145,.04) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+.splash-content{position:relative;z-index:2;text-align:center;}
+.splash-logo-wrap{
+  width:90px;height:90px;background:linear-gradient(135deg,var(--dark3),var(--card));
+  border-radius:26px;border:1px solid rgba(33,255,145,.25);
+  display:flex;align-items:center;justify-content:center;font-size:40px;
+  margin:0 auto 20px;box-shadow:0 0 50px rgba(33,255,145,.2);
+  animation:logoFloat 3s ease-in-out infinite;
+}
+@keyframes logoFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.splash-logo{font-family:var(--fh);font-size:38px;font-weight:800;color:var(--g);margin-bottom:6px;}
+.splash-logo span{color:#fff;}
+.splash-tagline{font-size:13px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+.splash-loader{width:100px;height:3px;background:rgba(33,255,145,.12);border-radius:50px;overflow:hidden;margin:32px auto 0;}
+.splash-loader-bar{height:100%;border-radius:50px;background:linear-gradient(90deg,var(--g2),var(--g));animation:loadSweep 1.8s ease-in-out infinite;}
+@keyframes loadSweep{0%{width:0;margin-left:0;}50%{width:70%;margin-left:0;}100%{width:0;margin-left:100%;}}
+.splash-ver{position:absolute;bottom:50px;left:0;right:0;text-align:center;font-size:11px;color:var(--muted2);}
+
+/* ══════════════════════════════════════════════
+   LOGIN SCREEN
+══════════════════════════════════════════════ */
+#login{padding-bottom:40px;}
+.login-hero{
+  height:220px;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:10px;position:relative;overflow:hidden;
+  background:linear-gradient(180deg,rgba(33,255,145,.06) 0%,transparent 100%);
+}
+.login-hero-icon{font-size:52px;filter:drop-shadow(0 0 20px rgba(33,255,145,.4));}
+.login-hero h2{font-family:var(--fh);font-size:22px;font-weight:800;color:#fff;}
+.login-hero p{font-size:13px;color:var(--muted);}
+.login-body{padding:8px 24px 0;display:flex;flex-direction:column;gap:14px;}
+.login-divider{
+  display:flex;align-items:center;gap:12px;
+  font-size:12px;color:var(--muted);margin:4px 0;
+}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.06);}
+.social-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.social-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+  border-radius:var(--r2);padding:13px;font-size:13px;color:var(--text);
+  cursor:pointer;transition:all .2s;font-family:var(--fb);
+}
+.social-btn:active{background:rgba(255,255,255,.09);}
+.login-footer{text-align:center;font-size:13px;color:var(--muted);margin-top:4px;}
+.login-footer b{color:var(--g);cursor:pointer;}
+.input-wrapper{position:relative;}
+.input-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;}
+.input-field.with-icon{padding-left:42px;}
+.eye-toggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:16px;cursor:pointer;color:var(--muted);}
+.error-msg{color:var(--red);font-size:12px;margin-top:4px;display:none;}
+.error-msg.show{display:block;}
+
+/* ══════════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════════ */
+#dashboard .scroll-body{padding:54px 0 88px;}
+.dash-header{
+  padding:16px 20px 12px;
+  background:linear-gradient(180deg,rgba(33,255,145,.05) 0%,transparent 100%);
+}
+.dash-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;}
+.dash-greeting{font-size:13px;color:var(--muted);}
+.dash-name{font-family:var(--fh);font-size:22px;font-weight:800;color:#fff;}
+.dash-avatar{
+  width:42px;height:42px;border-radius:50%;
+  background:linear-gradient(135deg,var(--g),var(--g2));
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--fh);font-weight:700;font-size:14px;color:var(--dark);
+  border:2px solid rgba(33,255,145,.3);
+}
+/* Hero points card */
+.pts-card{
+  margin:0 16px 14px;
+  background:linear-gradient(135deg,var(--dark3),var(--card));
+  border:1px solid rgba(33,255,145,.2);border-radius:22px;
+  padding:20px;position:relative;overflow:hidden;
+}
+.pts-card::before{
+  content:'';position:absolute;top:-40px;right:-40px;
+  width:160px;height:160px;
+  background:radial-gradient(circle,rgba(33,255,145,.12),transparent);
+  border-radius:50%;
+}
+.pts-card-top{display:flex;align-items:flex-start;justify-content:space-between;}
+.pts-label{font-size:12px;color:var(--muted);margin-bottom:4px;}
+.pts-value{font-family:var(--fh);font-size:42px;font-weight:800;color:var(--g);line-height:1;}
+.pts-sub{font-size:12px;color:var(--muted);margin-top:4px;}
+.pts-tier{
+  background:rgba(255,200,74,.12);border:1px solid rgba(255,200,74,.25);
+  color:var(--gold);padding:4px 12px;border-radius:50px;font-size:11px;font-weight:700;
+}
+.pts-progress{margin-top:16px;}
+.pts-prog-bar{height:6px;margin:6px 0;}
+.pts-prog-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);}
+/* Quick stats */
+.quick-stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;padding:0 16px 14px;}
+.qs{
+  background:var(--card);border:1px solid rgba(33,255,145,.07);
+  border-radius:14px;padding:12px 8px;text-align:center;cursor:pointer;
+  transition:all .2s;
+}
+.qs:active{transform:scale(.95);}
+.qs-icon{font-size:20px;margin-bottom:4px;}
+.qs-val{font-family:var(--fh);font-size:14px;font-weight:800;color:#fff;}
+.qs-label{font-size:10px;color:var(--muted);margin-top:2px;}
+/* Activity feed */
+.activity-section{padding:0 16px 16px;}
+.activity-item{
+  display:flex;align-items:center;gap:12px;padding:12px 0;
+  border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;
+  transition:background .2s;
+}
+.activity-item:active{background:rgba(255,255,255,.03);}
+.act-icon{
+  width:38px;height:38px;border-radius:10px;
+  background:rgba(33,255,145,.1);display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.act-info{flex:1;}
+.act-name{font-size:13px;font-weight:500;color:var(--text);}
+.act-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+.act-pts{font-family:var(--fh);font-size:13px;font-weight:700;color:var(--g);}
+/* Challenges */
+.challenge-card{
+  background:linear-gradient(135deg,rgba(56,201,240,.1),rgba(56,201,240,.03));
+  border:1px solid rgba(56,201,240,.2);border-radius:16px;padding:16px;margin:0 16px 16px;
+}
+.cc-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.cc-icon{font-size:24px;}
+.cc-title{font-family:var(--fh);font-size:14px;font-weight:700;color:#fff;}
+.cc-sub{font-size:11px;color:var(--muted);}
+.cc-progress{display:flex;align-items:center;gap:10px;}
+.cc-prog-bar{flex:1;height:8px;}
+.cc-pct{font-family:var(--fh);font-size:12px;font-weight:700;color:var(--blue);}
+
+/* ══════════════════════════════════════════════
+   SCAN SCREEN
+══════════════════════════════════════════════ */
+#scan .scan-hero{
+  height:280px;background:var(--dark2);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;flex-shrink:0;
+}
+.scan-bg-circle{
+  position:absolute;width:300px;height:300px;border-radius:50%;
+  border:1px solid rgba(33,255,145,.08);
+  animation:expandRing 3s ease-out infinite;
+}
+.scan-bg-circle:nth-child(2){animation-delay:1s;}
+.scan-bg-circle:nth-child(3){animation-delay:2s;}
+@keyframes expandRing{0%{transform:scale(.5);opacity:.8}100%{transform:scale(1.5);opacity:0}}
+.scan-viewfinder{position:relative;z-index:2;width:180px;height:180px;}
+.vf-corner{position:absolute;width:28px;height:28px;}
+.vf-corner svg{width:100%;height:100%;}
+.vf-corner.tl{top:0;left:0;}
+.vf-corner.tr{top:0;right:0;transform:scaleX(-1);}
+.vf-corner.bl{bottom:0;left:0;transform:scaleY(-1);}
+.vf-corner.br{bottom:0;right:0;transform:scale(-1,-1);}
+.vf-scanline{
+  position:absolute;left:10px;right:10px;height:2px;top:10px;
+  background:linear-gradient(90deg,transparent,var(--g),transparent);
+  animation:scanDown 2s linear infinite;
+}
+@keyframes scanDown{0%{top:10px;opacity:1}90%{top:164px;opacity:1}100%{top:164px;opacity:0}}
+.vf-label{position:absolute;bottom:-30px;left:0;right:0;text-align:center;font-size:12px;color:var(--g);}
+.scan-body{padding:20px 20px 0;flex:1;overflow-y:auto;scrollbar-width:none;padding-bottom:88px;}
+.scan-mode-tabs{display:flex;gap:8px;margin-bottom:18px;}
+.mode-tab{
+  flex:1;padding:10px;border-radius:var(--r2);text-align:center;font-size:13px;
+  font-weight:600;cursor:pointer;transition:all .2s;border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.04);color:var(--muted);font-family:var(--fb);
+}
+.mode-tab.active{background:rgba(33,255,145,.12);border-color:rgba(33,255,145,.3);color:var(--g);}
+.waste-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.waste-type-card{
+  background:var(--card);border:1px solid rgba(255,255,255,.06);
+  border-radius:16px;padding:16px;text-align:center;cursor:pointer;
+  transition:all .25s;position:relative;overflow:hidden;
+}
+.waste-type-card::before{
+  content:'';position:absolute;inset:0;border-radius:16px;
+  background:linear-gradient(135deg,var(--wc,rgba(33,255,145,.08)),transparent);
+  opacity:0;transition:opacity .2s;
+}
+.waste-type-card:hover::before,.waste-type-card:active::before{opacity:1;}
+.waste-type-card:active{transform:scale(.96);}
+.wt-emoji{font-size:28px;margin-bottom:8px;}
+.wt-name{font-family:var(--fh);font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;}
+.wt-desc{font-size:10px;color:var(--muted);}
+.wt-pts{
+  display:inline-block;margin-top:6px;background:rgba(33,255,145,.12);
+  color:var(--g);padding:2px 8px;border-radius:50px;font-size:11px;font-weight:700;
+}
+/* AI Result overlay */
+.ai-result-overlay{
+  position:absolute;inset:0;z-index:300;background:rgba(8,15,12,.95);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  padding:30px;text-align:center;
+}
+.ai-result-overlay.show{display:flex;}
+.ar-icon{font-size:70px;margin-bottom:16px;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.ar-title{font-family:var(--fh);font-size:22px;font-weight:800;color:#fff;margin-bottom:6px;}
+.ar-type{font-size:16px;color:var(--g);margin-bottom:6px;}
+.ar-pts{font-family:var(--fh);font-size:48px;font-weight:800;color:var(--g);line-height:1;}
+.ar-pts-label{font-size:14px;color:var(--muted);margin-bottom:20px;}
+.ar-tip{
+  background:var(--card);border:1px solid rgba(33,255,145,.12);
+  border-radius:14px;padding:14px;font-size:13px;color:var(--muted);
+  line-height:1.6;margin-bottom:20px;width:100%;
+}
+/* Confetti */
+.confetti-piece{
+  position:absolute;width:8px;height:8px;
+  animation:confettiFall 1s ease-out forwards;
+  pointer-events:none;
+}
+@keyframes confettiFall{
+  0%{transform:translateY(-20px) rotate(0deg);opacity:1;}
+  100%{transform:translateY(300px) rotate(720deg);opacity:0;}
+}
+
+/* ══════════════════════════════════════════════
+   REWARDS WALLET
+══════════════════════════════════════════════ */
+#rewards .scroll-body{padding:0 0 88px;}
+.wallet-header{
+  background:linear-gradient(160deg,var(--dark3),var(--card));
+  padding:60px 22px 24px;position:relative;overflow:hidden;
+}
+.wh-bg1{
+  position:absolute;top:-50px;right:-50px;width:200px;height:200px;
+  background:radial-gradient(circle,rgba(33,255,145,.1),transparent);border-radius:50%;
+}
+.wh-bg2{
+  position:absolute;bottom:-30px;left:-30px;width:150px;height:150px;
+  background:radial-gradient(circle,rgba(56,201,240,.06),transparent);border-radius:50%;
+}
+.wh-label{font-size:12px;color:var(--muted);margin-bottom:4px;}
+.wh-balance{font-family:var(--fh);font-size:52px;font-weight:800;color:var(--g);line-height:1;}
+.wh-pts-label{font-size:13px;color:var(--muted);margin-bottom:12px;}
+.wh-tier{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,200,74,.1);border:1px solid rgba(255,200,74,.25);
+  color:var(--gold);padding:5px 14px;border-radius:50px;font-size:12px;font-weight:700;
+}
+.wh-rank{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(33,255,145,.08);border:1px solid rgba(33,255,145,.15);
+  color:var(--g);padding:5px 14px;border-radius:50px;font-size:12px;font-weight:600;
+  margin-left:8px;
+}
+.wallet-body{padding:16px 18px;}
+/* Redeem grid */
+.redeem-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.redeem-card{
+  background:var(--card);border:1px solid rgba(255,255,255,.06);
+  border-radius:16px;padding:14px;cursor:pointer;transition:all .25s;
+  position:relative;overflow:hidden;
+}
+.redeem-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--rc,var(--g));
+}
+.redeem-card:active{transform:scale(.96);}
+.rc-icon{font-size:24px;margin-bottom:8px;}
+.rc-name{font-size:13px;font-weight:600;color:#fff;margin-bottom:2px;}
+.rc-pts{font-size:11px;color:var(--muted);}
+.rc-badge{
+  position:absolute;top:10px;right:10px;
+  background:rgba(255,255,255,.07);border-radius:6px;
+  padding:2px 6px;font-size:10px;color:var(--muted);
+}
+/* TX list */
+.tx-item{
+  display:flex;align-items:center;gap:12px;padding:12px 0;
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+.tx-dot{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;
+}
+.tx-dot.earn{background:rgba(33,255,145,.1);}
+.tx-dot.spend{background:rgba(255,91,91,.1);}
+.tx-info{flex:1;}
+.tx-name{font-size:13px;color:var(--text);}
+.tx-date{font-size:11px;color:var(--muted);margin-top:2px;}
+.tx-amount{font-family:var(--fh);font-size:14px;font-weight:700;}
+.tx-amount.earn{color:var(--g);}
+.tx-amount.spend{color:var(--red);}
+
+/* ══════════════════════════════════════════════
+   PICKUP BOOKING
+══════════════════════════════════════════════ */
+#pickup{padding-bottom:88px;}
+.pickup-map{
+  height:160px;background:var(--dark2);position:relative;overflow:hidden;flex-shrink:0;
+  margin:16px 16px 0;border-radius:16px;border:1px solid rgba(33,255,145,.12);
+}
+.map-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(33,255,145,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(33,255,145,.05) 1px,transparent 1px);
+  background-size:24px 24px;
+}
+.map-dot{
+  position:absolute;top:50%;left:48%;
+  width:14px;height:14px;border-radius:50%;
+  background:var(--g);transform:translate(-50%,-50%);
+  box-shadow:0 0 0 0 rgba(33,255,145,.4);
+  animation:mapPulse 2s infinite;
+}
+@keyframes mapPulse{
+  0%{box-shadow:0 0 0 0 rgba(33,255,145,.4);}
+  70%{box-shadow:0 0 0 16px rgba(33,255,145,0);}
+  100%{box-shadow:0 0 0 0 rgba(33,255,145,0);}
+}
+.map-pin{
+  position:absolute;top:35%;left:62%;
+  width:8px;height:8px;border-radius:50%;background:var(--blue);
+  box-shadow:0 0 8px rgba(56,201,240,.6);
+}
+.map-route{
+  position:absolute;top:40%;left:30%;width:100px;height:2px;
+  background:linear-gradient(90deg,var(--g),var(--blue));
+  border-radius:2px;transform:rotate(8deg);opacity:.4;
+}
+.map-label{
+  position:absolute;bottom:10px;left:10px;
+  background:rgba(8,15,12,.85);backdrop-filter:blur(10px);
+  border:1px solid rgba(33,255,145,.15);border-radius:8px;
+  padding:5px 10px;font-size:11px;color:var(--g);
+}
+.pickup-form-body{padding:16px;}
+.form-group{margin-bottom:14px;}
+.select-field{
+  background:rgba(255,255,255,.05);border:1px solid rgba(33,255,145,.12);
+  border-radius:var(--r2);padding:14px 16px;font-size:14px;color:var(--text);
+  width:100%;outline:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+}
+.waste-chips{display:flex;gap:8px;flex-wrap:wrap;}
+.date-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:8px;margin-top:8px;}
+.date-chip{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+  border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;transition:all .2s;
+}
+.date-chip.active{background:rgba(33,255,145,.12);border-color:rgba(33,255,145,.3);}
+.date-chip-day{font-size:10px;color:var(--muted);margin-bottom:2px;}
+.date-chip-num{font-family:var(--fh);font-size:16px;font-weight:700;color:#fff;}
+.time-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.time-chip{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+  border-radius:10px;padding:10px;text-align:center;cursor:pointer;transition:all .2s;font-size:12px;color:var(--text);
+}
+.time-chip.active{background:rgba(33,255,145,.12);border-color:rgba(33,255,145,.3);color:var(--g);}
+.pickup-confirm{
+  position:fixed;bottom:88px;left:50%;transform:translateX(-50%);
+  width:calc(390px - 32px);z-index:50;padding:0 16px;
+}
+/* Booking success */
+.booking-success{
+  position:absolute;inset:0;background:var(--dark);z-index:400;
+  display:none;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;
+}
+.booking-success.show{display:flex;}
+.bs-icon{font-size:70px;margin-bottom:16px;animation:popIn .5s cubic-bezier(.34,1.56,.64,1);}
+.bs-title{font-family:var(--fh);font-size:22px;font-weight:800;color:#fff;margin-bottom:6px;}
+.bs-sub{font-size:14px;color:var(--muted);margin-bottom:10px;line-height:1.6;}
+.bs-pts{font-family:var(--fh);font-size:32px;font-weight:800;color:var(--g);margin-bottom:20px;}
+
+/* ══════════════════════════════════════════════
+   ANALYTICS
+══════════════════════════════════════════════ */
+#analytics .scroll-body{padding:54px 0 88px;}
+.ana-tabs{display:flex;gap:8px;padding:0 16px 16px;}
+/* Chart */
+.chart-container{
+  padding:0 16px 16px;
+}
+.chart-card{background:var(--card);border:1px solid rgba(33,255,145,.07);border-radius:16px;padding:16px;}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.chart-title{font-family:var(--fh);font-size:13px;font-weight:700;color:#fff;}
+.chart-val{font-family:var(--fh);font-size:18px;font-weight:800;color:var(--g);}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:100px;}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;}
+.bar-fill{
+  width:100%;border-radius:4px 4px 0 0;
+  background:linear-gradient(180deg,var(--g),var(--g2));
+  min-height:4px;transition:height .6s ease;
+}
+.bar-col-label{font-size:9px;color:var(--muted);}
+/* Stats grid */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 14px;}
+.stat-card{background:var(--card);border:1px solid rgba(33,255,145,.07);border-radius:14px;padding:14px;}
+.sc-icon{font-size:22px;margin-bottom:6px;}
+.sc-val{font-family:var(--fh);font-size:22px;font-weight:800;color:var(--g);}
+.sc-label{font-size:11px;color:var(--muted);margin-top:2px;}
+.sc-change{font-size:11px;color:var(--g2);margin-top:4px;}
+/* Pie chart (CSS) */
+.category-list{padding:0 16px 14px;}
+.cat-item{
+  display:flex;align-items:center;gap:12px;padding:10px 0;
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+.cat-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.cat-info{flex:1;}
+.cat-name{font-size:13px;color:var(--text);}
+.cat-bar-wrap{height:4px;background:rgba(255,255,255,.06);border-radius:2px;margin-top:4px;}
+.cat-bar-fill{height:100%;border-radius:2px;}
+.cat-pct{font-family:var(--fh);font-size:13px;font-weight:700;color:var(--text);}
+
+/* ══════════════════════════════════════════════
+   LEADERBOARD
+══════════════════════════════════════════════ */
+#leaderboard .scroll-body{padding:54px 0 88px;}
+.lb-filters{display:flex;gap:8px;padding:0 16px 16px;overflow-x:auto;scrollbar-width:none;}
+.lb-filter{
+  white-space:nowrap;padding:7px 16px;border-radius:50px;font-size:12px;font-weight:600;
+  cursor:pointer;transition:all .2s;border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.04);color:var(--muted);font-family:var(--fb);
+}
+.lb-filter.active{background:var(--g);color:var(--dark);border-color:var(--g);}
+/* Podium */
+.podium-wrap{
+  padding:10px 16px 20px;display:flex;align-items:flex-end;justify-content:center;gap:10px;
+}
+.pod{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.pod-av{
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:var(--fh);font-weight:800;color:var(--dark);
+}
+.pod-av.rank1{width:60px;height:60px;font-size:20px;background:linear-gradient(135deg,#FFD700,#FFC000);}
+.pod-av.rank2{width:50px;height:50px;font-size:17px;background:linear-gradient(135deg,#C0C0C0,#A0A0A0);}
+.pod-av.rank3{width:44px;height:44px;font-size:15px;background:linear-gradient(135deg,#CD7F32,#A0522D);}
+.pod-medal{font-size:18px;}
+.pod-name{font-size:11px;color:var(--text);font-weight:500;text-align:center;}
+.pod-pts{font-family:var(--fh);font-size:11px;font-weight:700;color:var(--g);}
+.pod-base{border-radius:8px 8px 0 0;background:var(--card);border:1px solid rgba(33,255,145,.1);width:70px;}
+.pod-base.b1{height:60px;}
+.pod-base.b2{height:44px;}
+.pod-base.b3{height:34px;}
+/* List */
+.lb-list{padding:0 16px;}
+.lb-row{
+  display:flex;align-items:center;gap:12px;padding:12px;
+  background:var(--card);border:1px solid rgba(255,255,255,.05);
+  border-radius:14px;margin-bottom:8px;cursor:pointer;transition:all .2s;
+}
+.lb-row.you{border-color:rgba(33,255,145,.3);background:rgba(33,255,145,.05);}
+.lb-row:active{transform:scale(.98);}
+.lb-num{font-family:var(--fh);font-size:14px;font-weight:700;color:var(--muted);width:22px;text-align:center;}
+.lb-av{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--fh);font-weight:700;font-size:13px;color:var(--dark);flex-shrink:0;
+}
+.lb-info{flex:1;}
+.lb-name{font-size:13px;font-weight:600;color:#fff;}
+.lb-city{font-size:11px;color:var(--muted);margin-top:1px;}
+.lb-right{text-align:right;}
+.lb-score{font-family:var(--fh);font-size:14px;font-weight:700;color:var(--g);}
+.lb-change{font-size:10px;margin-top:2px;}
+.lb-change.up{color:var(--g2);}
+.lb-change.down{color:var(--red);}
+.you-badge{background:rgba(33,255,145,.12);color:var(--g);padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;margin-left:4px;}
+
+/* ══════════════════════════════════════════════
+   PROFILE
+══════════════════════════════════════════════ */
+#profile .scroll-body{padding:0 0 88px;}
+.profile-cover{
+  height:140px;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,var(--dark3),var(--card));
+}
+.cover-pattern{
+  position:absolute;inset:0;
+  background-image:radial-gradient(rgba(33,255,145,.08) 1px,transparent 1px);
+  background-size:18px 18px;
+}
+.cover-glow{
+  position:absolute;bottom:-40px;left:50%;transform:translateX(-50%);
+  width:200px;height:100px;
+  background:radial-gradient(ellipse,rgba(33,255,145,.12),transparent);
+}
+.profile-avatar-wrap{
+  position:absolute;bottom:-36px;left:50%;transform:translateX(-50%);
+  width:72px;height:72px;
+}
+.profile-avatar{
+  width:72px;height:72px;border-radius:50%;
+  background:linear-gradient(135deg,var(--g),var(--g2));
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--fh);font-weight:800;font-size:22px;color:var(--dark);
+  border:3px solid var(--dark);
+}
+.profile-info{padding:48px 20px 16px;text-align:center;}
+.prof-name{font-family:var(--fh);font-size:20px;font-weight:800;color:#fff;}
+.prof-handle{font-size:13px;color:var(--muted);margin-bottom:10px;}
+.prof-badges{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.profile-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 16px 16px;}
+.ps-card{background:var(--card);border:1px solid rgba(33,255,145,.07);border-radius:14px;padding:14px;text-align:center;}
+.ps-val{font-family:var(--fh);font-size:20px;font-weight:800;color:var(--g);}
+.ps-label{font-size:11px;color:var(--muted);margin-top:2px;}
+/* Eco score */
+.eco-score-section{padding:0 16px 16px;}
+.es-card{background:var(--card);border:1px solid rgba(33,255,145,.1);border-radius:16px;padding:16px;}
+.es-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.es-title{font-family:var(--fh);font-size:14px;font-weight:700;color:#fff;}
+.es-val{font-family:var(--fh);font-size:20px;font-weight:800;color:var(--g);}
+.es-bar{height:10px;margin-bottom:6px;}
+.es-compare{font-size:11px;color:var(--muted);}
+.es-categories{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;}
+.es-cat{display:flex;flex-direction:column;gap:4px;}
+.es-cat-label{font-size:11px;color:var(--muted);}
+.es-cat-bar{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;}
+.es-cat-fill{height:100%;border-radius:2px;}
+/* Badges */
+.badges-section{padding:0 16px 16px;}
+.badge-scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;}
+.badge-item{
+  background:var(--card);border:1px solid rgba(255,255,255,.06);
+  border-radius:14px;padding:12px 14px;text-align:center;flex-shrink:0;
+}
+.badge-item.earned{border-color:rgba(33,255,145,.2);background:rgba(33,255,145,.04);}
+.badge-icon{font-size:26px;margin-bottom:5px;}
+.badge-name{font-size:10px;color:var(--muted);white-space:nowrap;}
+.badge-item.earned .badge-name{color:var(--g);}
+/* Settings list */
+.settings-list{padding:0 16px 16px;}
+.setting-item{
+  display:flex;align-items:center;gap:12px;padding:14px 0;
+  border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:all .2s;
+}
+.setting-item:active{opacity:.7;}
+.set-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.set-info{flex:1;}
+.set-title{font-size:13px;color:var(--text);}
+.set-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.set-arrow{color:var(--muted);font-size:14px;}
+.logout-btn{
+  margin:0 16px;background:rgba(255,91,91,.1);border:1px solid rgba(255,91,91,.2);
+  border-radius:14px;padding:14px;text-align:center;cursor:pointer;
+  color:var(--red);font-weight:600;font-size:14px;transition:all .2s;
+}
+.logout-btn:active{background:rgba(255,91,91,.18);}
+
+/* ══════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════ */
+#toast{
+  position:absolute;bottom:96px;left:16px;right:16px;z-index:500;
+  background:var(--card2);border:1px solid rgba(33,255,145,.2);
+  border-radius:14px;padding:12px 16px;
+  display:flex;align-items:center;gap:10px;
+  transform:translateY(20px);opacity:0;
+  transition:all .3s cubic-bezier(.4,0,.2,1);
+  pointer-events:none;
+}
+#toast.show{transform:none;opacity:1;}
+#toast-icon{font-size:20px;}
+#toast-msg{font-size:13px;color:var(--text);flex:1;}
+#toast-pts{font-family:var(--fh);font-size:14px;font-weight:800;color:var(--g);}
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE — DESKTOP VIEW
+══════════════════════════════════════════════ */
+@media(max-width:420px){
+  #phone{width:100%;height:100%;border-radius:0;}
+}
+@media(min-width:421px){
+  .pickup-confirm{width:354px;padding:0;}
+}
+</style>
+</head>
+<body>
+
+<div id="shell">
+<div id="phone">
+
+  <!-- STATUS BAR -->
+  <div class="sbar">
+    <span id="sb-time">9:41</span>
+    <div class="sbar-right">
+      <svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+    </div>
+  </div>
+
+  <!-- ▓▓▓▓▓▓▓▓ SPLASH ▓▓▓▓▓▓▓▓ -->
+  <div id="splash" class="screen active">
+    <div class="splash-bg"></div>
+    <div class="splash-grid"></div>
+    <div class="splash-content">
+      <div class="splash-logo-wrap">♻</div>
+      <div class="splash-logo">Eco<span>Bin</span></div>
+      <div class="splash-tagline">Turn Waste Into Rewards</div>
+      <div class="splash-loader"><div class="splash-loader-bar"></div></div>
+    </div>
+    <div class="splash-ver">v2.1.0 · Made for a Greener India 🌿</div>
+  </div>
+
+  <!-- ▓▓▓▓▓▓▓▓ LOGIN ▓▓▓▓▓▓▓▓ -->
+  <div id="login" class="screen">
+    <div class="login-hero">
+      <div class="login-hero-icon">♻</div>
+      <h2>Welcome to EcoBin</h2>
+      <p>Sign in to start earning rewards</p>
+    </div>
+    <div class="login-body">
+      <div class="form-group">
+        <div class="input-label">Email or Phone</div>
+        <div class="input-wrapper">
+          <span class="input-icon">✉</span>
+          <input class="input-field with-icon" id="login-email" type="text" placeholder="you@email.com"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="input-label">Password</div>
+        <div class="input-wrapper">
+          <span class="input-icon">🔒</span>
+          <input class="input-field with-icon" id="login-pass" type="password" placeholder="••••••••"/>
+          <span class="eye-toggle" id="eye-toggle">👁</span>
+        </div>
+        <div class="error-msg" id="login-error">Incorrect email or password</div>
+      </div>
+      <button class="btn btn-primary" id="login-btn">Sign In →</button>
+      <div class="login-divider">or continue with</div>
+      <div class="social-grid">
+        <div class="social-btn" id="google-login">🌐 Google</div>
+        <div class="social-btn" id="otp-login">📱 Phone OTP</div>
+      </div>
+      <div class="login-footer">New to EcoBin? <b id="signup-link">Create Account</b></div>
+    </div>
+  </div>
+
+  <!-- ▓▓▓▓▓▓▓▓ DASHBOARD ▓▓▓▓▓▓▓▓ -->
+  <div id="dashboard" class="screen">
+    <div class="scroll-body">
+      <div class="dash-header">
+        <div class="dash-top">
+          <div>
+            <div class="dash-greeting" id="dash-greeting">Good morning 🌱</div>
+            <div class="dash-name">Pradnya Patil</div>
+          </div>
+          <div class="dash-avatar" onclick="goTo('profile')">PP</div>
+        </div>
+      </div>
+
+      <!-- Points card -->
+      <div class="pts-card">
+        <div class="pts-card-top">
+          <div>
+            <div class="pts-label">Your EcoPoints</div>
+            <div class="pts-value" id="dash-pts">2,840</div>
+            <div class="pts-sub" id="dash-pts-sub">+120 pts this week · 14 day streak 🔥</div>
+          </div>
+          <div class="pts-tier" id="dash-tier">🏅 Silver</div>
+        </div>
+        <div class="pts-progress">
+          <div class="progress-bar pts-prog-bar"><div class="progress-fill" id="pts-bar" style="width:68%"></div></div>
+          <div class="pts-prog-labels">
+            <span>Silver Tier</span>
+            <span id="pts-next-label">160 pts to Gold</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick stats -->
+      <div class="quick-stats">
+        <div class="qs" onclick="goTo('analytics')">
+          <div class="qs-icon">♻</div>
+          <div class="qs-val" id="qs-kg">48kg</div>
+          <div class="qs-label">Recycled</div>
+        </div>
+        <div class="qs" onclick="goTo('analytics')">
+          <div class="qs-icon">🌍</div>
+          <div class="qs-val" id="qs-co2">18kg</div>
+          <div class="qs-label">CO₂ Saved</div>
+        </div>
+        <div class="qs" onclick="goTo('leaderboard')">
+          <div class="qs-icon">🏆</div>
+          <div class="qs-val" id="qs-rank">#23</div>
+          <div class="qs-label">City Rank</div>
+        </div>
+        <div class="qs">
+          <div class="qs-icon">🔥</div>
+          <div class="qs-val" id="qs-streak">14d</div>
+          <div class="qs-label">Streak</div>
+        </div>
+      </div>
+
+      <!-- Challenge card -->
+      <div class="challenge-card">
+        <div class="cc-top">
+          <div class="cc-icon">🎯</div>
+          <div>
+            <div class="cc-title">Weekly Eco Challenge</div>
+            <div class="cc-sub">Recycle 5kg this week to earn 200 bonus pts</div>
+          </div>
+        </div>
+        <div class="cc-progress">
+          <div class="progress-bar cc-prog-bar" style="height:8px;flex:1"><div class="progress-fill" id="challenge-bar" style="width:62%"></div></div>
+          <div class="cc-pct" id="challenge-pct">62%</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;">3.1 kg / 5 kg recycled this week</div>
+      </div>
+
+      <!-- Activity feed -->
+      <div class="activity-section">
+        <div class="section-title">Recent Activity</div>
+        <div id="activity-feed">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+    <div class="bnav" id="bnav-dash">
+      <div class="bnav-item active" onclick="goTo('dashboard')"><div class="ni">🏠</div><div class="nl">Home</div></div>
+      <div class="bnav-item bnav-scan" onclick="goTo('scan')"><div class="ni">📷</div><div class="nl">Scan</div></div>
+      <div class="bnav-item" onclick="goTo('rewards')"><div class="ni">💰</div><div class="nl">Wallet</div></div>
+      <div class="bnav-item" onclick="goTo('analytics')"><div class="ni">📊</div><div class="nl">Stats</div></div>
+      <div class="bnav-item" onclick="goTo('profile')"><div class="ni">👤</div><div class="nl">Profile</div></div>
+    </div>
+  </div>
+
+  <!-- ▓▓▓▓▓▓▓▓ SCAN ▓▓▓▓▓▓▓▓ -->
+  <div id="scan" class="screen">
+    <div class="scan-hero">
+      <div class="scan-bg-circle"></div>
+      <div class="scan-bg-circle"></div>
+      <div class="scan-bg-circle"></div>
+      <div class="scan-viewfinder">
+        <div class="vf-corner tl"><svg viewBox="0 0 28 28"><path d="M2 26V2h24" fill="none" stroke="#21FF91" stroke-width="3" stroke-linecap="round"/></svg></div>
+        <div class="vf-corner tr"><svg viewBox="0 0 28 28"><path d="M2 26V2h24" fill="none" stroke="#21FF91" stroke-width="3" stroke-linecap="round"/></svg></div>
+        <div class="vf-corner bl"><svg viewBox="0 0 28 28"><path d="M2 26V2h24" fill="none" stroke="#21FF91" stroke-width="3" stroke-linecap="round"/></svg></div>
+        <div class="vf-corner br"><svg viewBox="0 0 28 28"><path d="M2 26V2h24" fill="none" stroke="#21FF91" stroke-width="3" stroke-linecap="round"/></svg></div>
+        <div class="vf-scanline"></div>
+        <div class="vf-label">AI SCANNING…</div>
+      </div>
+    </div>
+
+    <div class="scan-body">
+      <div class="scan-mode-tabs">
+        <div class="mode-tab active" id="tab-qr" onclick="setMode('qr',this)">QR Scan</div>
+        <div class="mode-tab" id="tab-manual" onclick="setMode('manual',this)">Manual Select</div>
+        <div class="mode-tab" id="tab-nearby" onclick="setMode('nearby',this)">Nearby Bins</div>
+      </div>
+
+      <div id="mode-qr">
+        <div style="text-align:center;padding:8px 0 16px;">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Point camera at any EcoBin QR code, or tap a waste type below to simulate AI detection</p>
+          <button class="btn btn-primary" style="width:auto;padding:12px 28px;" onclick="simulateScan()">🤖 Simulate AI Scan</button>
+        </div>
+      </div>
+
+      <div id="mode-manual" style="display:none;">
+        <div class="waste-grid">
+          <div class="waste-type-card" style="--wc:rgba(33,255,145,.15)" onclick="selectWasteType('plastic','🧴','Plastic','Bottle, bag, container','30')">
+            <div class="wt-emoji">🧴</div>
+            <div class="wt-name">Plastic</div>
+            <div class="wt-desc">Bottles, bags, containers</div>
+            <div class="wt-pts">+10–30 pts</div>
+          </div>
+          <div class="waste-type-card" style="--wc:rgba(56,201,240,.12)" onclick="selectWasteType('paper','📦','Paper / Cardboard','Boxes, newspapers','20')">
+            <div class="wt-emoji">📦</div>
+            <div class="wt-name">Paper</div>
+            <div class="wt-desc">Boxes, newspapers, cartons</div>
+            <div class="wt-pts">+10–20 pts</div>
+          </div>
+          <div class="waste-type-card" style="--wc:rgba(255,200,74,.12)" onclick="selectWasteType('organic','🥬','Organic / Wet','Food waste, garden','15')">
+            <div class="wt-emoji">🥬</div>
+            <div class="wt-name">Organic</div>
+            <div class="wt-desc">Food scraps, garden waste</div>
+            <div class="wt-pts">+5–15 pts</div>
+          </div>
+          <div class="waste-type-card" style="--wc:rgba(255,91,91,.12)" onclick="selectWasteType('ewaste','⚡','E-Waste','Batteries, electronics','80')">
+            <div class="wt-emoji">⚡</div>
+            <div class="wt-name">E-Waste</div>
+            <div class="wt-desc">Batteries, phones, wires</div>
+            <div class="wt-pts">+50–80 pts</div>
+          </div>
+          <div class="waste-type-card" style="--wc:rgba(180,127,255,.12)" onclick="selectWasteType('metal','🔩','Metal','Cans, tins, scrap','40')">
+            <div class="wt-emoji">🔩</div>
+            <div class="wt-name">Metal</div>
+            <div class="wt-desc">Cans, tins, aluminium</div>
+            <div class="wt-pts">+20–40 pts</div>
+          </div>
+          <div class="waste-type-card" style="--wc:rgba(255,200,74,.1)" onclick="selectWasteType('glass','🫙','Glass','Bottles, jars','25')">
+            <div class="wt-emoji">🫙</div>
+            <div class="wt-name">Glass</div>
+            <div class="wt-desc">Bottles, jars, containers</div>
+            <div class="wt-pts">+15–25 pts</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="mode-nearby" style="display:none;">
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="card card-sm" style="display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="selectNearbyBin('FC Road')">
+            <div style="width:42px;height:42px;background:rgba(33,255,145,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">♻</div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:600;color:#fff;">Bin #204 – FC Road</div>
+              <div style="font-size:11px;color:var(--muted);">120m · Dry Waste · 42% full</div>
+            </div>
+            <div class="tag-pill">Available</div>
+          </div>
+          <div class="card card-sm" style="display:flex;align-items:center;gap:12px;">
+            <div style="width:42px;height:42px;background:rgba(255,91,91,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">♻</div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:600;color:#fff;">Bin #107 – JM Road</div>
+              <div style="font-size:11px;color:var(--muted);">280m · Organic · 96% full</div>
+            </div>
+            <div style="background:rgba(255,91,91,.12);color:var(--red);padding:3px 10px;border-radius:50px;font-size:11px;font-weight:600;">Full</div>
+          </div>
+          <div class="card card-sm" style="display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="selectNearbyBin('Baner')">
+            <div style="width:42px;height:42px;background:rgba(56,201,240,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">⚡</div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:600;color:#fff;">E-Waste Drop #15 – Baner</div>
+              <div style="font-size:11px;color:var(--muted);">650m · E-Waste Only · 28% full</div>
+            </div>
+            <div class="tag-pill">Available</div>
+          </div>
+          <div class="card card-sm" style="display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="selectNearbyBin('Kothrud')">
+            <div style="width:42px;height:42px;background:rgba(33,255,145,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">♻</div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:600;color:#fff;">Bin #312 – Kothrud</div>
+              <div style="font-size:11px;color:var(--muted);">1.2km · Multi-waste · 55% full</div>
+            </div>
+            <div class="tag-pill">Available</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Result Overlay -->
+    <div class="ai-result-overlay" id="ai-result">
+      <div class="ar-icon" id="ar-icon">🧴</div>
+      <div class="ar-title">✅ Waste Detected!</div>
+      <div class="ar-type" id="ar-type">Plastic Bottle Detected</div>
+      <div class="ar-pts" id="ar-pts">+30</div>
+      <div class="ar-pts-label">EcoPoints Earned</div>
+      <div class="ar-tip" id="ar-tip">Great job! Plastic bottles should be rinsed before disposal. You've helped divert 0.05 kg of plastic from landfill.</div>
+      <button class="btn btn-primary" style="max-width:280px;" onclick="closeResult()">Continue Recycling ♻</button>
+      <div style="margin-top:10px;">
+        <button class="btn btn-ghost" style="max-width:280px;" onclick="closeResult();goTo('rewards')">View My Wallet →</button>
+      </div>
+    </div>
+
+    <div class="bnav">
+      <div class="bnav-item" onclick="goTo('dashboard')"><div class="ni">🏠</div><div class="nl">Home</div></div>
+      <div class="bnav-item active bnav-scan" onclick="goTo('scan')"><div class="ni">📷</div><div class="nl">Scan</div></div>
+      <div class="bnav-item" onclick="goTo('rewards')"><div class="ni">💰</div><div class="nl">Wallet</div></div>
+      <div class="bnav-item" onclick="goTo('analytics')"><div class="ni">📊</div><div class="nl">Stats</div></div>
+      <div class="bnav-item" onclick="goTo('profile')"><div class="ni">👤</div><div class="nl">Profile</div></div>
+    </div>
+  </div>
+
+  <!-- ▓▓▓▓▓▓▓▓ REWARDS ▓▓▓▓▓▓▓▓ -->
+  <div id="rewards" class="screen">
+    <div class="scroll-body">
+      <div class="wallet-header">
+        <div class="wh-bg1"></div><div class="wh-bg2"></div>
+        <div class="wh-label">EcoWallet Balance</div>
+        <div class="wh-balance" id="wallet-bal">2,840</div>
+        <div class="wh-pts-label">EcoPoints · Mumbai Region</div>
+        <div>
+          <div class="wh-tier">🏅 Silver Eco Champion</div>
+          <div class="wh-rank">🏆 Rank #<span id="wallet-rank">23</span></div>
+        </div>
+      </div>
+
+      <div style="padding:16px 18px 0;">
+        <div class="section-title">Redeem Points</div>
+        <div class="redeem-grid">
+          <div class="redeem-card" style="--rc:var(--g)" onclick="redeemPoints(200,'🛒','BigBasket Discount')">
+            <div class="rc-badge">200 pts</div>
+            <div class="rc-icon">🛒</div>
+            <div class="rc-name">Groceries</div>
+            <div class="rc-pts">20% off BigBasket</div>
+          </div>
+          <div class="redeem-card" style="--rc:var(--red)" onclick="redeemPoints(150,'🍔','Swiggy Voucher')">
+            <div class="rc-badge">150 pts</div>
+            <div class="rc-icon">🍔</div>
+            <div class="rc-name">Food</div>
+            <div class="rc-pts">₹50 Swiggy voucher</div>
+          </div>
+          <div class="redeem-card" style="--rc:var(--blue)" onclick="redeemPoints(50,'🚌','Metro Credit')">
+            <div class="rc-badge">50 pts</div>
+            <div class="rc-icon">🚌</div>
+            <div class="rc-name">Transit</div>
+            <div class="rc-pts">Free metro ride</div>
+          </div>
+          <div class="redeem-card" style="--rc:var(--g2)" onclick="redeemPoints(100,'🌳','Tree Planted')">
+            <div class="rc-badge">100 pts</div>
+            <div class="rc-icon">🌳</div>
+            <div class="rc-name">Plant a Tree</div>
+            <div class="rc-pts">Via Green India NGO</div>
+          </div>
+          <div class="redeem-card" style="--rc:var(--gold)" onclick="redeemPoints(300,'☕','Café Voucher')">
+            <div class="rc-badge">300 pts</div>
+            <div class="rc-icon">☕</div>
+            <div class="rc-name">Café</div>
+            <div class="rc-pts">Free coffee at partners</div>
+          </div>
+          <div class="redeem-card" style="--rc:var(--purple)" onclick="redeemPoints(500,'🎬','Movie Ticket')">
+            <div class="rc-badge">500 pts</div>
+            <div class="rc-icon">🎬</div>
+            <div class="rc-name">Movies</div>
+            <div class="rc-pts">PVR / INOX ticket</div>
+          </div>
+        </div>
+
+        <div class="section-title">Transaction History</div>
+        <div id="tx-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <div class="bnav">
+      <div class="bnav-item" onclick="goTo('dashboard')"><div class="ni">🏠</div><div class="nl">Home</div></div>
+      <div class="bnav-item bnav-scan" onclick="goTo('scan')"><div class="ni">📷</div><div class="nl">Scan</div></div>
+      <div class="bnav-item active" onclick="goTo('rewards')"><div class="ni">💰</div><div class="nl">Wallet</div></div>
+      <div class="bnav-item" onclick="goTo('analytics')"><div class="ni">📊</div><div class="nl">Stats</div></div>
+      <div class="bnav-item" onclick="goTo('profile')"><div class="ni">👤</div><div class="nl">Profile</div></div>
+    </div>
+  </div>
+
+  <!-- ▓▓▓▓▓▓▓▓ PICKUP ▓▓▓▓▓▓▓▓ -->
+  <div id="pickup" class="screen">
+    <div style="padding:58px 16px 10px;display:flex;align-items:center;gap:12px;">
+      <div class="back-btn" onclick="goBack()">←</div>
+      <div>
+        <div style="font-family:var(--fh);font-size:20px;font-weight:800;color:#fff;">Schedule Pickup</div>
+        <div style="font-size:12px;color:var(--muted);">Doorstep recycling collection</div>
+      </div>
+    </div>
+
+    <div class="pickup-map">
+      <div class="map-grid"></div>
+      <div class="map-dot"></div>
+      <div class="map-pin"></div>
+      <div class="map-route"></div>
+      <div class="map-label">📍 Your Location · Pune</div>
+    </div>
+
+    <div class="pickup-form-body" style="overflow-y:auto;max-height:460px;scrollbar-width:none;padding-bottom:100px;">
+      <div class="form-group">
+        <div class="input-label">📍 Pickup Address</div>
+        <input class="input-field" type="text" value="Flat 204, Green Valley Society, Pune" id="pu-address"/>
+      </div>
+      <div class="form-group">
+        <div class="input-label">📅 Select Date</div>
+        <div class="date-grid" id="date-grid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="input-label">⏰ Time Slot</div>
+        <div class="time-grid">
+          <div class="time-chip active" data-time="0" onclick="selectTime(0,this)">8–10 AM</div>
+          <div class="time-chip" data-time="1" onclick="selectTime(1,this)">10–12 PM</div>
+          <div class="time-chip" data-time="2" onclick="selectTime(2,this)">12–2 PM</div>
+          <div class="time-chip" data-time="3" onclick="selectTime(3,this)">2–4 PM</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="input-label">♻ Waste Types</div>
+        <div class="waste-chips" id="waste-chips">
+          <span class="chip active" onclick="toggleChip(this)">🧴 Plastic</span>
+          <span class="chip active" onclick="toggleChip(this)">📦 Paper</span>
+          <span class="chip" onclick="toggleChip(this)">⚡ E-Waste</span>
+          <span class="chip" onclick="toggleChip(this)">🔩 Metal</span>
+          <span class="chip" onclick="toggleChip(this)">🫙 Glass</span>
+          <span class="chip" onclick="toggleChip(this)">🥬 Organic</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="input-label">📝 Special Instructions</div>
+        <textarea class="input-field" rows="2" placeholder="e.g., Call before arrival, gate code: 1234" style="resize:none;"></textarea>
+      </div>
+    </div>
+
+    <div class="pickup-confirm">
+      <button class="btn btn-primary" onclick="confirmPickup()">Confirm Pickup · +50 pts →</button>
+    </div>
+
+    <div class="booking-success" id="booking-success">
+      <div class="bs-icon">✅</div>
+      <div class="bs-title">Pickup Booked!</div>
+      <div class="bs-sub" id="bs-detail">Your pickup has been confirmed. Our partner will arrive at your scheduled time.</div>
+      <div class="bs-pts">+50 EcoPoints</div>
+      <button class="btn btn-primary" style="max-width:280px;" onclick="closeBooking()">Back to Home →</button>
+    </div>
+  </div>
+
+  <!-- ▓▓▓▓▓▓▓▓ ANALYTICS ▓▓▓▓▓▓▓▓ -->
+  <div id="analytics" class="screen">
+    <div class="scroll-body">
+      <div class="page-head">
+        <div class="ph-tag">Your Impact</div>
+        <div class="ph-title">Recycling <span class="accent">Analytics</span></div>
+        <div class="ph-sub">Track your environmental contribution</div>
+      </div>
+
+      <div class="ana-tabs">
+        <span class="chip active" id="tab-week" onclick="setAnalyticsTab('week',this)">This Week</span>
+        <span class="chip" id="tab-month" onclick="setAnalyticsTab('month',this)">This Month</span>
+        <span class="chip" id="tab-year" onclick="setAnalyticsTab('year',this)">This Year</span>
+      </div>
+
+      <!-- Bar chart -->
+      <div class="chart-container">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title" id="chart-title">Daily Recycling (kg)</div>
+            <div class="chart-val" id="chart-total">8.4 kg</div>
+          </div>
+          <div class="bar-chart" id="bar-chart">
+            <!-- populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="sc-icon">♻</div>
+          <div class="sc-val" id="stat-kg">8.4kg</div>
+          <div class="sc-label">Total Recycled</div>
+          <div class="sc-change" id="stat-kg-chg">↑ 12% vs last week</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-icon">🌍</div>
+          <div class="sc-val" id="stat-co2">3.1kg</div>
+          <div class="sc-label">CO₂ Avoided</div>
+          <div class="sc-change" id="stat-co2-chg">↑ 8% vs last week</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-icon">💰</div>
+          <div class="sc-val" id="stat-pts">+320</div>
+          <div class="sc-label">Points Earned</div>
+          <div class="sc-change" id="stat-pts-chg">↑ 24% vs last week</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-icon">🎯</div>
+          <div class="sc-val" id="stat-acc">92%</div>
+          <div class="sc-label">Sort Accuracy</div>
+          <div class="sc-change" id="stat-acc-chg">↑ 3% improvement</div>
+        </div>
+      </div>
+
+      <!-- Categories -->
+      <div class="category-list">
+        <div class="section-title" style="padding:0 16px;">Waste Breakdown</div>
+        <div style="padding:0 16px;">
+          <div class="cat-item">
+            <div class="cat-dot" style="background:var(--g)"></div>
+            <div class="cat-info">
+              <div class="cat-name">Plastic</div>
+              <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:42%;background:var(--g)"></div></div>
+            </div>
+            <div class="cat-pct">42%</div>
+          </div>
+          <div class="cat-item">
+            <div class="cat-dot" style="background:var(--blue)"></div>
+            <div class="cat-info">
+              <div class="cat-name">Paper / Cardboard</div>
+              <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:28%;background:var(--blue)"></div></div>
+            </div>
+            <div class="cat-pct">28%</div>
+          </div>
+          <div class="cat-item">
+            <div class="cat-dot" style="background:var(--gold)"></div>
+            <div class="cat-info">
+              <div class="cat-name">Organic</div>
+              <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:18%;background:var(--gold)"></div></div>
+            </div>
+            <div class="cat-pct">18%</div>
+          </div>
+          <div class="cat-item">
+            <div class="cat-dot" style="background:var(--red)"></div>
+            <div class="cat-info">
+              <div class="cat-name">E-Waste</div>
+              <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:12%;background:var(--red)"></div></div>
+            </div>
+            <div class="cat-pct">12%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Impact summary -->
+      <div style="padding:0 16px 16px;">
+        <div class="section-title">Lifetime Impact</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="card" style="text-align:center;border-color:rgba(33,255,145,.15);">
+            <div style="font-size:28px;margin-bottom:6px;">♻</div>
+            <div style="font-family:var(--fh);font-size:22px;font-weight:800;color:var(--g);">48 kg</div>
+            <div style="font-size:11px;color:var(--muted);">Total Waste Recycled</div>
+          </div>
+          <div class="card" style="text-align:center;border-color:rgba(56,201,240,.15);">
+            <div style="font-size:28px;margin-bottom:6px;">🌳</div>
+            <div style="font-family:var(--fh);font-size:22px;font-weight:800;color:var(--blue);">2.4</div>
+            <div style="font-size:11px;color:var(--muted);">Trees Equivalent Saved</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bnav">
+      <div class="bnav-item" onclick="goTo('dashboard')"><div class="ni">🏠</div><div class="nl">Home</div></div>
+      <div class="bnav-item bnav-scan" onclick="goTo('scan')"><div class="ni">📷</div><div class="nl">Scan</div></div>
+      <div class="bnav-item" onclick="goTo('rewards')"><div class="ni">💰</div><div class="nl">Wallet</div></div>
+      <div class="bnav-item active" onclick="goTo('analytics')"><div class="ni">📊</div><div class="nl">Stats</div></div>
+      <div class="bnav-item" onclick="goTo('profile')"><div class="ni">👤</div><div class="nl">Profile</div></div>
+    </div>
+  </div>
+
+  <!-- ▓▓▓▓▓▓▓▓ LEADERBOARD ▓▓▓▓▓▓▓▓ -->
+  <div id="leaderboard" class="screen">
+    <div class="scroll-body">
+      <div class="page-head">
+        <div class="ph-tag">Community</div>
+        <div class="ph-title">🏆 <span class="accent">Leaderboard</span></div>
+        <div class="ph-sub" id="lb-period">Pune City · May 2025</div>
+      </div>
+
+      <div class="lb-filters">
+        <div class="lb-filter active" onclick="setLbFilter('city',this)">City</div>
+        <div class="lb-filter" onclick="setLbFilter('society',this)">Society</div>
+        <div class="lb-filter" onclick="setLbFilter('college',this)">College</div>
+        <div class="lb-filter" onclick="setLbFilter('friends',this)">Friends</div>
+        <div class="lb-filter" onclick="setLbFilter('national',this)">National</div>
+      </div>
+
+      <!-- Podium -->
+      <div class="podium-wrap" id="podium-wrap">
+        <!-- populated by JS -->
+      </div>
+
+      <!-- List -->
+      <div class="lb-list" id="lb-list">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <div class="bnav">
+      <div class="bnav-item" onclick="goTo('dashboard')"><div class="ni">🏠</div><div class="nl">Home</div></div>
+      <div class="bnav-item bnav-scan" onclick="goTo('scan')"><div class="ni">📷</div><div class="nl">Scan</div></div>
+      <div class="bnav-item" onclick="goTo('rewards')"><div class="ni">💰</div><div class="nl">Wallet</div></div>
+      <div class="bnav-item active" onclick="goTo('analytics')"><div class="ni">📊</div><div class="nl">Stats</div></div>
+      <div class="bnav-item" onclick="goTo('profile')"><div class="ni">👤</div><div class="nl">Profile</div></div>
+    </div>
+  </div>
+
+  <!-- ▓▓▓▓▓▓▓▓ PROFILE ▓▓▓▓▓▓▓▓ -->
+  <div id="profile" class="screen">
+    <div class="scroll-body">
+      <div class="profile-cover">
+        <div class="cover-pattern"></div>
+        <div class="cover-glow"></div>
+        <div class="profile-avatar-wrap"><div class="profile-avatar">PP</div></div>
+      </div>
+
+      <div class="profile-info">
+        <div class="prof-name">Pradnya Patil</div>
+        <div class="prof-handle">@pradnya.ecobin · Pune 📍</div>
+        <div class="prof-badges">
+          <div class="tag-pill">🌿 Silver Champion</div>
+          <div style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,91,91,.1);border:1px solid rgba(255,91,91,.2);color:var(--red);padding:3px 10px;border-radius:50px;font-size:11px;font-weight:600;">🔥 14-Day Streak</div>
+        </div>
+      </div>
+
+      <div class="profile-stats">
+        <div class="ps-card"><div class="ps-val" id="prof-kg">48kg</div><div class="ps-label">Recycled</div></div>
+        <div class="ps-card"><div class="ps-val" id="prof-pts">2,840</div><div class="ps-label">EcoPoints</div></div>
+        <div class="ps-card"><div class="ps-val" id="prof-streak">14d</div><div class="ps-label">Streak</div></div>
+      </div>
+
+      <!-- Eco score -->
+      <div class="eco-score-section">
+        <div class="es-card">
+          <div class="es-top">
+            <div class="es-title">🌱 Sustainability Score</div>
+            <div class="es-val" id="eco-score-val">74</div>
+          </div>
+          <div class="progress-bar es-bar"><div class="progress-fill" id="eco-score-bar" style="width:74%"></div></div>
+          <div class="es-compare">Better than 68% of users in Pune</div>
+          <div class="es-categories">
+            <div class="es-cat"><div class="es-cat-label">Segregation</div><div class="es-cat-bar"><div class="es-cat-fill" style="width:92%;background:var(--g)"></div></div></div>
+            <div class="es-cat"><div class="es-cat-label">Frequency</div><div class="es-cat-bar"><div class="es-cat-fill" style="width:78%;background:var(--blue)"></div></div></div>
+            <div class="es-cat"><div class="es-cat-label">Volume</div><div class="es-cat-bar"><div class="es-cat-fill" style="width:60%;background:var(--gold)"></div></div></div>
+            <div class="es-cat"><div class="es-cat-label">Streak</div><div class="es-cat-bar"><div class="es-cat-fill" style="width:70%;background:var(--purple)"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Badges -->
+      <div class="badges-section">
+        <div class="section-title">Earned Badges</div>
+        <div class="badge-scroll">
+          <div class="badge-item earned"><div class="badge-icon">♻</div><div class="badge-name">Recycler</div></div>
+          <div class="badge-item earned"><div class="badge-icon">🔥</div><div class="badge-name">14-Day</div></div>
+          <div class="badge-item earned"><div class="badge-icon">🏙</div><div class="badge-name">Urban Eco</div></div>
+          <div class="badge-item earned"><div class="badge-icon">⚡</div><div class="badge-name">E-Champ</div></div>
+          <div class="badge-item earned"><div class="badge-icon">🌳</div><div class="badge-name">Tree Saver</div></div>
+          <div class="badge-item"><div class="badge-icon">👑</div><div class="badge-name">Gold Tier</div></div>
+          <div class="badge-item"><div class="badge-icon">🌍</div><div class="badge-name">Carbon Hero</div></div>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div class="settings-list">
+        <div class="section-title">Account</div>
+        <div class="setting-item"><div class="set-icon" style="background:rgba(33,255,145,.1);">👤</div><div class="set-info"><div class="set-title">Edit Profile</div><div class="set-sub">Name, photo, address</div></div><div class="set-arrow">›</div></div>
+        <div class="setting-item" onclick="goTo('pickup')"><div class="set-icon" style="background:rgba(56,201,240,.1);">📦</div><div class="set-info"><div class="set-title">Schedule Pickup</div><div class="set-sub">Book doorstep collection</div></div><div class="set-arrow">›</div></div>
+        <div class="setting-item"><div class="set-icon" style="background:rgba(255,200,74,.1);">🔔</div><div class="set-info"><div class="set-title">Notifications</div><div class="set-sub">Reminders and alerts</div></div><div class="set-arrow">›</div></div>
+        <div class="setting-item"><div class="set-icon" style="background:rgba(180,127,255,.1);">🔒</div><div class="set-info"><div class="set-title">Privacy</div><div class="set-sub">Data and security</div></div><div class="set-arrow">›</div></div>
+        <div class="setting-item"><div class="set-icon" style="background:rgba(255,91,91,.1);">❓</div><div class="set-info"><div class="set-title">Help & Support</div><div class="set-sub">FAQs and contact</div></div><div class="set-arrow">›</div></div>
+      </div>
+
+      <div class="logout-btn" onclick="logout()">Sign Out</div>
+      <div style="height:20px;"></div>
+    </div>
+
+    <div class="bnav">
+      <div class="bnav-item" onclick="goTo('dashboard')"><div class="ni">🏠</div><div class="nl">Home</div></div>
+      <div class="bnav-item bnav-scan" onclick="goTo('scan')"><div class="ni">📷</div><div class="nl">Scan</div></div>
+      <div class="bnav-item" onclick="goTo('rewards')"><div class="ni">💰</div><div class="nl">Wallet</div></div>
+      <div class="bnav-item" onclick="goTo('analytics')"><div class="ni">📊</div><div class="nl">Stats</div></div>
+      <div class="bnav-item active" onclick="goTo('profile')"><div class="ni">👤</div><div class="nl">Profile</div></div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast">
+    <div id="toast-icon">♻</div>
+    <div id="toast-msg">Points earned!</div>
+    <div id="toast-pts">+30</div>
+  </div>
+
+</div><!-- /phone -->
+</div><!-- /shell -->
+
+<script>
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+const state = {
+  points: 2840,
+  kg: 48,
+  streak: 14,
+  rank: 23,
+  currentScreen: 'splash',
+  prevScreen: null,
+  transactions: [
+    {icon:'🧴',name:'Plastic Bottle × 3',date:'Today 9:42 AM',pts:30,type:'earn'},
+    {icon:'📦',name:'Cardboard Box × 2',date:'Yesterday 4:15 PM',pts:40,type:'earn'},
+    {icon:'🛒',name:'BigBasket Redeemed',date:'May 18',pts:-200,type:'spend'},
+    {icon:'🔋',name:'Battery Disposal',date:'May 17',pts:80,type:'earn'},
+    {icon:'🏆',name:'Weekly Challenge Bonus',date:'May 16',pts:150,type:'earn'},
+    {icon:'🌳',name:'Tree Planted',date:'May 14',pts:-100,type:'spend'},
+  ],
+};
+
+// ══════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════
+function goTo(id, isBack=false){
+  const cur = document.getElementById(state.currentScreen);
+  const next = document.getElementById(id);
+  if(!next || id === state.currentScreen) return;
+
+  state.prevScreen = state.currentScreen;
+  state.currentScreen = id;
+
+  cur.style.display='flex';
+  next.style.display='flex';
+
+  if(isBack){
+    next.classList.add('slide-back-in');
+    cur.classList.add('slide-back-out');
+  } else {
+    next.classList.add('slide-in');
+    cur.classList.add('slide-out');
+  }
+
+  setTimeout(()=>{
+    cur.classList.remove('active','slide-out','slide-back-out');
+    cur.style.display='';
+    next.classList.remove('slide-in','slide-back-in');
+    next.classList.add('active');
+
+    // Post-navigate init
+    if(id==='dashboard') renderDashboard();
+    if(id==='rewards') renderWallet();
+    if(id==='leaderboard') renderLeaderboard('city');
+    if(id==='analytics') renderAnalytics('week');
+    if(id==='pickup') renderPickupDates();
+    if(id==='profile') updateProfile();
+  }, 320);
+}
+
+function goBack(){
+  if(state.prevScreen) goTo(state.prevScreen, true);
+  else goTo('dashboard', true);
+}
+
+// ══════════════════════════════════════════════
+// STATUS BAR CLOCK
+// ══════════════════════════════════════════════
+function updateClock(){
+  const now = new Date();
+  let h = now.getHours(), m = now.getMinutes();
+  document.getElementById('sb-time').textContent = `${h}:${m<10?'0'+m:m}`;
+}
+setInterval(updateClock, 10000);
+updateClock();
+
+// ══════════════════════════════════════════════
+// SPLASH → LOGIN
+// ══════════════════════════════════════════════
+setTimeout(()=>{
+  document.getElementById('splash').classList.remove('active');
+  document.getElementById('splash').style.display='none';
+  const login = document.getElementById('login');
+  login.classList.add('active');
+  login.style.display='flex';
+  state.currentScreen = 'login';
+}, 2200);
+
+// ══════════════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════════════
+document.getElementById('eye-toggle').addEventListener('click', function(){
+  const f = document.getElementById('login-pass');
+  f.type = f.type==='password' ? 'text' : 'password';
+  this.textContent = f.type==='password' ? '👁' : '🙈';
+});
+
+document.getElementById('login-btn').addEventListener('click', function(){
+  const email = document.getElementById('login-email').value;
+  const pass = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-error');
+  if(!email || !pass){
+    err.textContent = 'Please enter email and password';
+    err.classList.add('show'); return;
+  }
+  err.classList.remove('show');
+  this.textContent = 'Signing in…';
+  this.disabled = true;
+  setTimeout(()=>{
+    this.textContent = 'Sign In →';
+    this.disabled = false;
+    goTo('dashboard');
+  }, 1000);
+});
+
+['google-login','otp-login'].forEach(id=>{
+  document.getElementById(id).addEventListener('click', ()=>{
+    showToast('🌐','Signed in successfully!','+Welcome');
+    setTimeout(()=>goTo('dashboard'), 800);
+  });
+});
+document.getElementById('signup-link').addEventListener('click', ()=>{
+  showToast('✉','Account created! Welcome to EcoBin 🌱','');
+  setTimeout(()=>goTo('dashboard'), 800);
+});
+
+function logout(){
+  goTo('login', true);
+  showToast('👋','Signed out. See you tomorrow!','');
+}
+
+// ══════════════════════════════════════════════
+// GREETING
+// ══════════════════════════════════════════════
+function updateGreeting(){
+  const h = new Date().getHours();
+  const g = h<12?'Good morning 🌱':h<17?'Good afternoon ☀':'Good evening 🌙';
+  const el = document.getElementById('dash-greeting');
+  if(el) el.textContent = g;
+}
+
+// ══════════════════════════════════════════════
+// DASHBOARD RENDER
+// ══════════════════════════════════════════════
+function renderDashboard(){
+  updateGreeting();
+  const pts = state.points;
+  document.getElementById('dash-pts').textContent = pts.toLocaleString();
+  document.getElementById('qs-kg').textContent = state.kg+'kg';
+  document.getElementById('qs-rank').textContent = '#'+state.rank;
+  document.getElementById('qs-streak').textContent = state.streak+'d';
+
+  // Tier calculation
+  let tier='Bronze', nextPts=1000, nextName='Silver';
+  if(pts>=3000){tier='🥇 Gold';nextPts=5000;nextName='Platinum';}
+  else if(pts>=1000){tier='🏅 Silver';nextPts=3000;nextName='Gold';}
+  const pct = Math.min(100,((pts-(tier.includes('Silver')?1000:0))/(nextPts-(tier.includes('Silver')?1000:0)))*100);
+  document.getElementById('dash-tier').textContent = tier;
+  document.getElementById('pts-bar').style.width = pct+'%';
+  document.getElementById('pts-next-label').textContent = `${(nextPts-pts).toLocaleString()} pts to ${nextName}`;
+
+  // Activity feed
+  const feed = document.getElementById('activity-feed');
+  feed.innerHTML = state.transactions.slice(0,5).map(tx=>`
+    <div class="activity-item">
+      <div class="act-icon">${tx.icon}</div>
+      <div class="act-info">
+        <div class="act-name">${tx.name}</div>
+        <div class="act-meta">${tx.date}</div>
+      </div>
+      <div class="act-pts" style="color:${tx.type==='earn'?'var(--g)':'var(--red)'}">${tx.type==='earn'?'+':'-'}${Math.abs(tx.pts)}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// SCAN / WASTE
+// ══════════════════════════════════════════════
+const wasteDB = {
+  plastic:{icon:'🧴',name:'Plastic Bottle Detected',pts:30,tip:'Plastic bottles should be rinsed before disposal. You diverted 0.05 kg from landfill!'},
+  paper:{icon:'📦',name:'Cardboard / Paper Detected',pts:20,tip:'Flatten cardboard boxes to save space. You\'ve saved 0.08 kg CO₂ with this disposal!'},
+  organic:{icon:'🥬',name:'Organic Waste Detected',pts:15,tip:'Organic waste becomes compost! This will return as nutrients to local farms.'},
+  ewaste:{icon:'⚡',name:'E-Waste Detected',pts:80,tip:'⚠ Excellent! E-waste contains toxic materials. Safe disposal prevents soil contamination.'},
+  metal:{icon:'🔩',name:'Metal / Aluminium Detected',pts:40,tip:'Aluminium is infinitely recyclable. This can saves 95% energy vs producing new metal!'},
+  glass:{icon:'🫙',name:'Glass Container Detected',pts:25,tip:'Glass is 100% recyclable! This bottle can be recycled endlessly without quality loss.'},
+};
+
+const autoWasteTypes = ['plastic','paper','organic','ewaste','metal','glass'];
+
+function simulateScan(){
+  const type = autoWasteTypes[Math.floor(Math.random()*autoWasteTypes.length)];
+  showResult(wasteDB[type], type);
+}
+
+function selectWasteType(type, icon, name, desc, pts){
+  const data = wasteDB[type] || {icon,name:name+' Detected',pts:parseInt(pts),tip:'Great recycling! Every bit counts toward a cleaner India.'};
+  showResult(data, type);
+}
+
+function selectNearbyBin(binName){
+  showToast('📍',`Connected to Bin at ${binName}`,'');
+  setTimeout(()=>{ setMode('manual', document.getElementById('tab-manual')); }, 600);
+}
+
+function showResult(data, type){
+  const overlay = document.getElementById('ai-result');
+  document.getElementById('ar-icon').textContent = data.icon;
+  document.getElementById('ar-type').textContent = data.name;
+  document.getElementById('ar-pts').textContent = '+'+data.pts;
+  document.getElementById('ar-tip').textContent = data.tip;
+  overlay.classList.add('show');
+  earnPoints(data.pts, data.icon, data.name.replace(' Detected',''));
+  spawnConfetti();
+}
+
+function closeResult(){
+  document.getElementById('ai-result').classList.remove('show');
+}
+
+function setMode(mode, el){
+  document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('mode-qr').style.display = mode==='qr'?'block':'none';
+  document.getElementById('mode-manual').style.display = mode==='manual'?'block':'none';
+  document.getElementById('mode-nearby').style.display = mode==='nearby'?'block':'none';
+}
+
+// ══════════════════════════════════════════════
+// POINTS ENGINE
+// ══════════════════════════════════════════════
+function earnPoints(pts, icon, name){
+  state.points += pts;
+  state.kg = +(state.kg + pts*0.05).toFixed(1);
+
+  const now = new Date();
+  const timeStr = `Today ${now.getHours()}:${now.getMinutes()<10?'0'+now.getMinutes():now.getMinutes()}`;
+  state.transactions.unshift({icon, name, date:timeStr, pts, type:'earn'});
+
+  updateAllPointDisplays();
+  showToast(icon, name, '+'+pts+' pts');
+}
+
+function redeemPoints(cost, icon, name){
+  if(state.points < cost){
+    showToast('❌','Not enough EcoPoints','Need '+cost+' pts');
+    return;
+  }
+  state.points -= cost;
+  state.transactions.unshift({icon, name:'Redeemed: '+name, date:'Just now', pts:cost, type:'spend'});
+  updateAllPointDisplays();
+  renderWallet();
+  showToast(icon, name+' redeemed!', '-'+cost+' pts');
+}
+
+function updateAllPointDisplays(){
+  const f = n=>n.toLocaleString();
+  ['dash-pts','wallet-bal','prof-pts'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.textContent = f(state.points);
+  });
+  const profKg = document.getElementById('prof-kg');
+  if(profKg) profKg.textContent = state.kg+'kg';
+  const qKg = document.getElementById('qs-kg');
+  if(qKg) qKg.textContent = state.kg+'kg';
+  const ecoBar = document.getElementById('eco-score-bar');
+  if(ecoBar){
+    const score = Math.min(100,Math.round(60+(state.points/5000)*40));
+    ecoBar.style.width = score+'%';
+    const sv = document.getElementById('eco-score-val');
+    if(sv) sv.textContent = score;
+  }
+}
+
+// ══════════════════════════════════════════════
+// WALLET RENDER
+// ══════════════════════════════════════════════
+function renderWallet(){
+  document.getElementById('wallet-bal').textContent = state.points.toLocaleString();
+  const txList = document.getElementById('tx-list');
+  txList.innerHTML = state.transactions.map(tx=>`
+    <div class="tx-item">
+      <div class="tx-dot ${tx.type}">
+        <span>${tx.icon}</span>
+      </div>
+      <div class="tx-info">
+        <div class="tx-name">${tx.name}</div>
+        <div class="tx-date">${tx.date}</div>
+      </div>
+      <div class="tx-amount ${tx.type}">${tx.type==='earn'?'+':'-'}${Math.abs(tx.pts)}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// ANALYTICS
+// ══════════════════════════════════════════════
+const analyticsData = {
+  week:{
+    labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+    values:[1.2,2.4,1.8,3.2,2.2,2.8,1.6],
+    total:'8.4 kg',kg:'8.4kg',co2:'3.1kg',pts:'+320',acc:'92%',
+    changes:['↑ 12%','↑ 8%','↑ 24%','↑ 3%'],title:'Daily Recycling (kg)'
+  },
+  month:{
+    labels:['W1','W2','W3','W4'],
+    values:[18,22,30,26],
+    total:'48 kg',kg:'48kg',co2:'17.6kg',pts:'+1,840',acc:'91%',
+    changes:['↑ 18%','↑ 14%','↑ 30%','↑ 1%'],title:'Weekly Recycling (kg)'
+  },
+  year:{
+    labels:['Jan','Feb','Mar','Apr','May','Jun'],
+    values:[32,28,40,45,52,48],
+    total:'245 kg',kg:'245kg',co2:'89.8kg',pts:'+9,200',acc:'90%',
+    changes:['↑ 22%','↑ 18%','↑ 34%','↑ 5%'],title:'Monthly Recycling (kg)'
+  }
+};
+
+function renderAnalytics(tab){
+  const d = analyticsData[tab];
+  const max = Math.max(...d.values);
+  document.getElementById('chart-title').textContent = d.title;
+  document.getElementById('chart-total').textContent = d.total;
+  document.getElementById('stat-kg').textContent = d.kg;
+  document.getElementById('stat-co2').textContent = d.co2;
+  document.getElementById('stat-pts').textContent = d.pts;
+  document.getElementById('stat-acc').textContent = d.acc;
+  document.getElementById('stat-kg-chg').textContent = d.changes[0]+' vs prev';
+  document.getElementById('stat-co2-chg').textContent = d.changes[1]+' vs prev';
+  document.getElementById('stat-pts-chg').textContent = d.changes[2]+' vs prev';
+  document.getElementById('stat-acc-chg').textContent = d.changes[3]+' improvement';
+
+  const chart = document.getElementById('bar-chart');
+  chart.innerHTML = d.labels.map((l,i)=>`
+    <div class="bar-col">
+      <div class="bar-fill" style="height:${Math.round((d.values[i]/max)*100)+'%'}"></div>
+      <div class="bar-col-label">${l}</div>
+    </div>`).join('');
+}
+
+function setAnalyticsTab(tab, el){
+  document.querySelectorAll('.ana-tabs .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderAnalytics(tab);
+}
+
+// ══════════════════════════════════════════════
+// LEADERBOARD
+// ══════════════════════════════════════════════
+const lbData = {
+  city:[
+    {av:'SR',name:'Sunita Reddy',city:'Koregaon Park',pts:5840,change:'+2',up:true,color:'#FFD700'},
+    {av:'AK',name:'Arjun Kulkarni',city:'Kothrud',pts:4120,change:'+1',up:true,color:'#C0C0C0'},
+    {av:'PM',name:'Priya Mehta',city:'Baner',pts:3790,change:'–',up:false,color:'#CD7F32'},
+    {av:'RJ',name:'Rahul Joshi',city:'Aundh',pts:3210,change:'+3',up:true,color:'#21FF91'},
+    {av:'NK',name:'Neha Kadam',city:'Viman Nagar',pts:2990,change:'–',up:false,color:'#38C9F0'},
+    {av:'VD',name:'Vivek Desai',city:'Hadapsar',pts:2890,change:'+1',up:true,color:'#B47FFF'},
+    {av:'SD',name:'Sneha Deshpande',city:'FC Road',pts:2858,change:'+2',up:true,color:'#FFC84A'},
+    {av:'PP',name:'Pradnya Patil',city:'Pune',pts:state.points,change:'+5',up:true,color:'#21FF91',isYou:true},
+  ],
+  society:[
+    {av:'GV',name:'Green Valley Society',city:'Block A Team',pts:12400,color:'#FFD700'},
+    {av:'SP',name:'Sai Paradise CHS',city:'Sector B',pts:9800,color:'#C0C0C0'},
+    {av:'RK',name:'Royal Kalyani',city:'Society 3',pts:7600,color:'#CD7F32'},
+    {av:'PP',name:'Pradnya Patil',city:'Your Society',pts:state.points,color:'#21FF91',isYou:true},
+  ],
+  college:[
+    {av:'SY',name:'Symbiosis MBA',city:'Campus Champions',pts:34500,color:'#FFD700'},
+    {av:'FL',name:'FLAME University',city:'Green Team',pts:28200,color:'#C0C0C0'},
+    {av:'FC',name:'Fergusson College',city:'Eco Batch',pts:22100,color:'#CD7F32'},
+    {av:'PP',name:'Pradnya Patil',city:'Your College',pts:state.points,color:'#21FF91',isYou:true},
+  ],
+  friends:[
+    {av:'AP',name:'Anjali Patel',city:'Friend',pts:3100,color:'#FFD700'},
+    {av:'PP',name:'Pradnya Patil',city:'You',pts:state.points,color:'#21FF91',isYou:true},
+    {av:'RS',name:'Rohit Sharma',city:'Friend',pts:2400,color:'#C0C0C0'},
+  ],
+  national:[
+    {av:'MK',name:'Meera Krishnan',city:'Chennai',pts:9200,color:'#FFD700'},
+    {av:'AV',name:'Amit Verma',city:'Delhi',pts:8100,color:'#C0C0C0'},
+    {av:'SB',name:'Snehal Bhide',city:'Mumbai',pts:7800,color:'#CD7F32'},
+    {av:'PP',name:'Pradnya Patil',city:'Pune',pts:state.points,color:'#21FF91',isYou:true},
+  ]
+};
+
+function renderLeaderboard(filter){
+  const data = lbData[filter] || lbData.city;
+  const sorted = [...data].sort((a,b)=>b.pts-a.pts);
+  const labels = {city:'Pune City',society:'Societies',college:'Colleges',friends:'Friends',national:'India'};
+  document.getElementById('lb-period').textContent = `${labels[filter]} · May 2025`;
+
+  // Podium (top 3)
+  const top3 = sorted.slice(0,3);
+  const podOrder = top3.length>=3 ? [top3[1],top3[0],top3[2]] : top3;
+  const ranks = top3.length>=3 ? [2,1,3] : [1,2,3];
+  const medals = ['🥈','🥇','🥉'];
+  const podH = ['b2','b1','b3'];
+
+  document.getElementById('podium-wrap').innerHTML = podOrder.map((p,i)=>`
+    <div class="pod">
+      <div class="pod-av rank${ranks[i]}" style="background:linear-gradient(135deg,${p.color},${p.color}99)">${p.av}</div>
+      <div class="pod-medal">${medals[i]}</div>
+      <div class="pod-name">${p.name.split(' ')[0]}</div>
+      <div class="pod-pts">${p.pts.toLocaleString()}</div>
+      <div class="pod-base ${podH[i]}"></div>
+    </div>`).join('');
+
+  // Full list
+  document.getElementById('lb-list').innerHTML = sorted.map((p,i)=>`
+    <div class="lb-row ${p.isYou?'you':''}">
+      <div class="lb-num">${i+1}</div>
+      <div class="lb-av" style="background:linear-gradient(135deg,${p.color},${p.color}99)">${p.av}</div>
+      <div class="lb-info">
+        <div class="lb-name">${p.name}${p.isYou?'<span class="you-badge">YOU</span>':''}</div>
+        <div class="lb-city">${p.city}</div>
+      </div>
+      <div class="lb-right">
+        <div class="lb-score">${p.pts.toLocaleString()}</div>
+        ${p.change?`<div class="lb-change ${p.up?'up':'down'}">${p.up?'↑':'↓'} ${p.change}</div>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function setLbFilter(filter, el){
+  document.querySelectorAll('.lb-filter').forEach(f=>f.classList.remove('active'));
+  el.classList.add('active');
+  renderLeaderboard(filter);
+}
+
+// ══════════════════════════════════════════════
+// PICKUP
+// ══════════════════════════════════════════════
+function renderPickupDates(){
+  const grid = document.getElementById('date-grid');
+  if(!grid) return;
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const now = new Date();
+  grid.innerHTML = Array.from({length:5},(_,i)=>{
+    const d = new Date(now);
+    d.setDate(now.getDate()+i+1);
+    return `<div class="date-chip ${i===1?'active':''}" onclick="selectDate(this)">
+      <div class="date-chip-day">${days[d.getDay()]}</div>
+      <div class="date-chip-num">${d.getDate()}</div>
+    </div>`;
+  }).join('');
+}
+
+function selectDate(el){
+  document.querySelectorAll('.date-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+}
+function selectTime(i, el){
+  document.querySelectorAll('.time-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+}
+function toggleChip(el){ el.classList.toggle('active'); }
+
+function confirmPickup(){
+  const chips = document.querySelectorAll('#waste-chips .chip.active');
+  if(chips.length===0){ showToast('⚠','Please select at least one waste type',''); return; }
+  const dateEl = document.querySelector('.date-chip.active .date-chip-num');
+  const timeEl = document.querySelector('.time-chip.active');
+  const dateStr = dateEl ? dateEl.textContent : 'Tomorrow';
+  const timeStr = timeEl ? timeEl.textContent : '10–12 PM';
+  document.getElementById('bs-detail').innerHTML =
+    `Pickup confirmed for <b style="color:var(--g)">May ${dateStr}, ${timeStr}</b>.<br>Our verified partner will arrive at your address.`;
+
+  const success = document.getElementById('booking-success');
+  success.classList.add('show');
+  earnPoints(50,'📅','Pickup Scheduled');
+}
+
+function closeBooking(){
+  document.getElementById('booking-success').classList.remove('show');
+  goTo('dashboard', true);
+}
+
+// ══════════════════════════════════════════════
+// PROFILE
+// ══════════════════════════════════════════════
+function updateProfile(){
+  document.getElementById('prof-pts').textContent = state.points.toLocaleString();
+  document.getElementById('prof-kg').textContent = state.kg+'kg';
+  document.getElementById('prof-streak').textContent = state.streak+'d';
+  const score = Math.min(100,Math.round(60+(state.points/5000)*40));
+  document.getElementById('eco-score-val').textContent = score;
+  document.getElementById('eco-score-bar').style.width = score+'%';
+}
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+let toastTimer;
+function showToast(icon, msg, pts){
+  clearTimeout(toastTimer);
+  document.getElementById('toast-icon').textContent = icon;
+  document.getElementById('toast-msg').textContent = msg;
+  document.getElementById('toast-pts').textContent = pts;
+  document.getElementById('toast').classList.add('show');
+  toastTimer = setTimeout(()=>document.getElementById('toast').classList.remove('show'), 2500);
+}
+
+// ══════════════════════════════════════════════
+// CONFETTI
+// ══════════════════════════════════════════════
+function spawnConfetti(){
+  const colors = ['#21FF91','#FFC84A','#38C9F0','#B47FFF','#FF5B5B'];
+  const overlay = document.getElementById('ai-result');
+  for(let i=0;i<18;i++){
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.cssText = `
+      left:${20+Math.random()*60}%;
+      top:${10+Math.random()*20}%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      border-radius:${Math.random()>0.5?'50%':'2px'};
+      width:${6+Math.random()*6}px;
+      height:${6+Math.random()*6}px;
+      animation-delay:${Math.random()*0.4}s;
+      animation-duration:${0.8+Math.random()*0.6}s;
+    `;
+    overlay.appendChild(piece);
+    setTimeout(()=>piece.remove(), 1500);
+  }
+}
+
+// Initial dashboard render
+setTimeout(()=>{ if(state.currentScreen==='dashboard') renderDashboard(); }, 100);
+</script>
+</body>
+</html>
